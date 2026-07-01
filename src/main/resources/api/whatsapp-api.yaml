@@ -1,0 +1,170 @@
+openapi: 3.0.3
+info:
+  title: WhatsApp Cloud API / WCE Emulator Specificatie
+  version: 1.0.0
+  description: Minimale OpenAPI-specificatie voor het testen van tekstberichten met Java en de WCE Emulator.
+paths:
+  /messages:
+    post:
+      summary: Verstuur een WhatsApp-bericht
+      description: Stuurt een uitgaand JSON-bericht naar de WCE Emulator of Meta Cloud API.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendMessageRequest'
+      responses:
+        '200':
+          description: Bericht succesvol verwerkt door de API/emulator.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SendMessageResponse'
+
+  /webhook:
+    post:
+      summary: Ontvang inkomend WhatsApp-bericht
+      description: Het endpoint op de Spring Boot-server waar de emulator inkomende berichten naartoe pusht.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WebhookPayload'
+      responses:
+        '200':
+          description: Webhook succesvol ontvangen.
+
+components:
+  schemas:
+    # --- UITGAANDE PAYLOAD SCHEMAS ---
+    SendMessageRequest:
+      type: object
+      required:
+        - messaging_product
+        - recipient_type
+        - to
+        - type
+        - text
+      properties:
+        messaging_product:
+          type: string
+          example: "whatsapp"
+        recipient_type:
+          type: string
+          example: "individual"
+        to:
+          type: string
+          example: "31612345678"
+        type:
+          type: string
+          example: "text"
+        text:
+          type: object
+          required:
+            - body
+          properties:
+            preview_url:
+              type: boolean
+              example: false
+            body:
+              type: string
+              example: "Echo reply: Received your message!"
+
+    SendMessageResponse:
+      type: object
+      properties:
+        messaging_product:
+          type: string
+          example: "whatsapp"
+        contacts:
+          type: array
+          items:
+            type: object
+            properties:
+              input:
+                type: string
+                example: "31612345678"
+              wa_id:
+                type: string
+                example: "31612345678"
+        messages:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                example: "wamid.HBgL...ZAgA="
+
+    # --- INKOMENDE WEBHOOK SCHEMAS (Meta / WCE structuur) ---
+    WebhookPayload:
+      type: object
+      properties:
+        object:
+          type: string
+          example: "whatsapp_business_account"
+        entry:
+          type: array
+          items:
+            $ref: '#/components/schemas/WebhookEntry'
+
+    WebhookEntry:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "1234567890"
+        changes:
+          type: array
+          items:
+            $ref: '#/components/schemas/WebhookChange'
+
+    WebhookChange:
+      type: object
+      properties:
+        field:
+          type: string
+          example: "messages"
+        value:
+          type: object
+          properties:
+            messaging_product:
+              type: string
+              example: "whatsapp"
+            metadata:
+              type: object
+              properties:
+                display_phone_number:
+                  type: string
+                  example: "1234567890"
+                phone_number_id:
+                  type: string
+                  example: "1234567890"
+            messages:
+              type: array
+              items:
+                $ref: '#/components/schemas/IncomingMessage'
+
+    IncomingMessage:
+      type: object
+      properties:
+        from:
+          type: string
+          example: "31612345678"
+        id:
+          type: string
+          example: "wamid.HBgL..."
+        timestamp:
+          type: string
+          example: "1710000000"
+        type:
+          type: string
+          example: "text"
+        text:
+          type: object
+          properties:
+            body:
+              type: string
+              example: "Hello Bot"
