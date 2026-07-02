@@ -62,11 +62,16 @@
       <version>1.39.0</version>
     </dependency>
 
-    <!-- Lombok -->
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
       <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-collections4</artifactId>
+      <version>4.5.0</version>
+      <scope>compile</scope>
     </dependency>
 
     <!-- Testing -->
@@ -75,6 +80,22 @@
       <artifactId>spring-boot-starter-webmvc-test</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>testcontainers</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>ollama</artifactId>
+      <scope>test</scope>
+    </dependency>
+
   </dependencies>
 
   <dependencyManagement>
@@ -83,6 +104,13 @@
         <groupId>org.springframework.ai</groupId>
         <artifactId>spring-ai-bom</artifactId>
         <version>${spring-ai.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>testcontainers-bom</artifactId>
+        <version>1.21.4</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -105,7 +133,7 @@
         </configuration>
       </plugin>
 
-      <!-- Compiler Plugin met Lombok integratie -->
+      <!-- Compiler Plugin with Lombok integration -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -145,7 +173,6 @@
         </executions>
       </plugin>
 
-      <!-- OpenAPI Generator Plugin -->
       <plugin>
         <groupId>org.openapitools</groupId>
         <artifactId>openapi-generator-maven-plugin</artifactId>
@@ -170,9 +197,28 @@
                 <useJackson3>true</useJackson3>
                 <useSpringBoot4>true</useSpringBoot4>
                 <documentationProvider>none</documentationProvider>
-                <useBeanValidation>true</useBeanValidation> <!-- Aangezet omdat we nu de starter hebben -->
+                <useBeanValidation>true</useBeanValidation>
                 <performBeanValidation>true</performBeanValidation>
               </configOptions>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <version>3.6.1</version>
+        <executions>
+          <execution>
+            <id>add-source</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>add-source</goal>
+            </goals>
+            <configuration>
+              <sources>
+                <source>${project.build.directory}/generated-sources/openapi</source>
+              </sources>
             </configuration>
           </execution>
         </executions>

@@ -26,9 +26,19 @@ Calendar API and the Gemini AI engine:
   environment variable named `GEMINI_API_KEY` on your system.
 
 ### Whatsapp emulator
-
 https://github.com/DonnC/wce-emulator
 
-export PORT=3000
+
 export BOT_WEBHOOK_URL="http://localhost:8080/webhook"
+
+If not run already, run:
+```bash
+npm install
+npm run postinstall
+```
+Otherwise:
+```bash
 npm run dev
+```
+
+Emulator should be available at http://localhost:8081/

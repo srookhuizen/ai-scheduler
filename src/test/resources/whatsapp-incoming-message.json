@@ -1,0 +1,31 @@
+{
+  "object": "whatsapp_business_account",
+  "entry": [
+    {
+      "id": "1234567890",
+      "changes": [
+        {
+          "field": "messages",
+          "value": {
+            "messaging_product": "whatsapp",
+            "metadata": {
+              "display_phone_number": "1234567890",
+              "phone_number_id": "1234567890"
+            },
+            "messages": [
+              {
+                "from": "31612345678",
+                "id": "wamid.HBgLMzE2MTIzNDU2NzhGv",
+                "timestamp": "1710000000",
+                "type": "text",
+                "text": {
+                  "body": "Plan een vergadering voor morgen"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

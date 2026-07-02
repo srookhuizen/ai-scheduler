@@ -8,13 +8,13 @@ import org.springframework.web.client.RestClient;
 @Configuration
 public class WhatsappClientConfig {
 
-  @Bean
-  public RestClient whatsappRestClient() {
-    // Gebruikt de standaard ingebouwde Java netwerk-stack die standaard HTTP/1.1 afdwingt
-    var factory = new SimpleClientHttpRequestFactory();
+    @Bean
+    public RestClient whatsappRestClient() {
+        // Gebruikt de standaard ingebouwde Java netwerk-stack die standaard HTTP/1.1 afdwingt
+        var factory = new SimpleClientHttpRequestFactory();
 
-    return RestClient.builder()
-        .requestFactory(factory)
-        .build();
-  }
+        return RestClient.builder()
+                .requestFactory(factory)
+                .build();
+    }
 }
