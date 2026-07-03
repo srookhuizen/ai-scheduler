@@ -8,8 +8,12 @@ import com.google.api.client.util.DateTime;
 import com.google.api.services.calendar.Calendar;
 import com.google.api.services.calendar.CalendarScopes;
 import com.google.api.services.calendar.model.Event;
+import com.google.api.services.calendar.model.EventDateTime;
+import com.google.api.services.calendar.model.EventReminder;
 import com.google.auth.http.HttpCredentialsAdapter;
 import com.google.auth.oauth2.GoogleCredentials;
+import java.security.GeneralSecurityException;
+import java.util.Arrays;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.tool.annotation.Tool;
@@ -43,6 +47,10 @@ public class CalendarService {
                 localDateTime.atZone(ZoneId.of("Europe/Amsterdam")).toInstant().toEpochMilli());
     }
 
+    private EventDateTime getEventDateTime(LocalDateTime localDateTime) {
+        return new EventDateTime().setDateTime(getDateTime(localDateTime)).setTimeZone("Europe/Amsterdam");
+    }
+
     @Tool(name = "getEvents", description = "Get the events from Google calendar for a given start and end date")
     public List<Event> getEvents(LocalDateTime start, LocalDateTime end) throws IOException {
         log.info("Getting events from Google calendar for start {} end {}", start, end);
@@ -53,6 +61,28 @@ public class CalendarService {
 
         log.info("Found events [{}], from [{}], till [{}]", events.size(), start, end);
         return events;
+    }
+
+    public void deleteEvent(Event event) throws GeneralSecurityException, IOException {
+        log.info("Deleting event [{}, {}] ", event.getSummary(), event.getStart());
+        getCalendar().events().delete(calendarId, event.getId()).execute();
+    }
+
+    @Tool(name = "addEvent", description = "Get the events from Google calendar for a given start and end date")
+    public void addEvent(String summary, String description, LocalDateTime start, LocalDateTime end) throws GeneralSecurityException, IOException {
+        Event event = new Event().setSummary(summary).setDescription(description);
+
+        event.setStart(getEventDateTime(start));
+        event.setEnd(getEventDateTime(end));
+
+        EventReminder[] reminderOverrides = new EventReminder[] {
+            new EventReminder().setMethod("email").setMinutes(60 * 24 * 7) // one week
+        };
+        Event.Reminders reminders = new Event.Reminders().setUseDefault(false).setOverrides(Arrays.asList(reminderOverrides));
+        event.setReminders(reminders);
+
+        event = getCalendar().events().insert(calendarId, event).execute();
+        log.info("Event created: summary [{}] date [{}]", event.getSummary(), event.getStart());
     }
 
     private Calendar getCalendar() throws IOException {
