@@ -12,13 +12,19 @@ import nl.tss.ai_scheduler.service.WhatsappService;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
+import org.springframework.ai.chat.prompt.SystemPromptTemplate;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 @RequiredArgsConstructor
@@ -30,8 +36,10 @@ public class WhatsappWebhookController {
     private final WhatsappService apiService;
     private final ChatClient chatClient;
     private final CalendarService calendarService;
-    private final String systemMessage;
     private final MessageChatMemoryAdvisor memoryAdvisor;
+
+    @Value("classpath:/prompts/scheduler-system-prompt.st")
+    private Resource systemPromptResource;
 
     @Value("${whatsapp.api.verify-token}")
     private String configuredVerifyToken;
@@ -43,21 +51,20 @@ public class WhatsappWebhookController {
             @RequestParam("hub.challenge") String challenge) {
 
         if ("subscribe".equals(mode) && configuredVerifyToken.equals(token)) {
-            System.out.println("Webhook validated successfully!");
+            log.info("Webhook validated successfully!");
             return ResponseEntity.ok(challenge);
         }
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Verification failed");
     }
 
     @PostMapping
-    public ResponseEntity<Void> handleIncomingMessage(@RequestBody WebhookPayload payload, HttpSession session) {
+    public ResponseEntity<Void> handleIncomingMessage(@RequestBody WebhookPayload payload) {
         log.info("Incoming message received: {}", payload);
 
         if (payload != null && payload.getEntry() != null) {
             for (WebhookEntry entry : payload.getEntry()) {
                 if (entry.getChanges() != null) {
                     for (WebhookChange change : entry.getChanges()) {
-
                         if (change.getValue() != null && change.getValue().getMessages() != null) {
                             List<IncomingMessage> messages = change.getValue().getMessages();
 
@@ -65,13 +72,12 @@ public class WhatsappWebhookController {
                                 String senderNumber = msg.getFrom();
                                 String messageText = (msg.getText() != null) ? msg.getText().getBody() : "";
 
-                                log.info("Incoming message from {}: {}", senderNumber, messageText);
                                 if (StringUtils.hasText(messageText)) {
-                                    sendResponse(session.getId(), messageText, senderNumber);
+                                    log.info("Incoming message from {}: {}", senderNumber, messageText);
+                                    sendResponse(senderNumber, messageText, senderNumber);
                                 }
                             }
                         }
-
                     }
                 }
             }
@@ -79,15 +85,28 @@ public class WhatsappWebhookController {
         return ResponseEntity.ok().build();
     }
 
-    private void sendResponse(String sessionId, String message, String senderNumber) {
+    private void sendResponse(String memoryId, String message, String senderNumber) {
+        String dynamicTimestamp = ZonedDateTime.now(ZoneId.of("Europe/Amsterdam"))
+                .format(DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy 'at' hh:mm a z"));
+
+        log.info("Compiling system-prompt template dynamically with clock value: {}", dynamicTimestamp);
+
+        SystemPromptTemplate template = new SystemPromptTemplate(systemPromptResource);
+        String compiledSystemPrompt = template.createMessage(Map.of(
+                "currentDate", dynamicTimestamp,
+                "openingTime", "9:00 AM",
+                "closingTime", "5:00 PM"
+        )).getText();
+
         String responseMessage = Objects.requireNonNull(Objects.requireNonNull(chatClient.prompt()
-                .system(systemMessage)
+                .system(compiledSystemPrompt)
                 .advisors(advisorSpec -> advisorSpec
                         .advisors(memoryAdvisor)
-                        .param(ChatMemory.CONVERSATION_ID, sessionId))
+                        .param(ChatMemory.CONVERSATION_ID, memoryId))
                 .user(message)
                 .tools(calendarService)
                 .call().chatResponse()).getResult()).getOutput().getText();
+
         apiService.sendTextMessage(senderNumber, responseMessage);
     }
 }

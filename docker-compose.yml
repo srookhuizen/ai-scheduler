@@ -1,0 +1,30 @@
+services:
+  # THE STABLE AUTOMATED AI ENGINE
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama-engine
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-storage:/root/.ollama
+    # FIX: Explicitly forces the container kernel to evaluate text contexts using Amsterdam Daylight Saving time (UTC+2)
+    environment:
+      - TZ=Europe/Amsterdam
+    entrypoint: [ "/bin/sh", "-c" ]
+    command: >
+      "ollama serve &
+       echo '==> Waiting for internal server socket to bind...' &&
+       until ollama list >/dev/null 2>&1; do sleep 1; done &&
+       echo '==> Connection active! Pre-loading agentic qwen2.5:3b weights...' &&
+       ollama pull qwen2.5:3b &&
+       echo '==> AI engine initialization complete!' &&
+       wait"
+    networks:
+      - whatsapp-ai-network
+
+volumes:
+  ollama-storage:
+
+networks:
+  whatsapp-ai-network:
+    driver: bridge

@@ -1,6 +1,5 @@
 package nl.tss.ai_scheduler.service;
 
-import com.google.common.collect.Collections2;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import nl.tss.ai_scheduler.dto.SendMessageRequest;
@@ -11,8 +10,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
-
-import java.util.Collections;
 
 @Service
 @RequiredArgsConstructor

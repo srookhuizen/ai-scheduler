@@ -26,7 +26,7 @@ Calendar API and the Gemini AI engine:
   environment variable named `GEMINI_API_KEY` on your system.
 
 ### Whatsapp emulator
-https://github.com/DonnC/wce-emulator
+git clone https://github.com/DonnC/wce-emulator
 
 
 export BOT_WEBHOOK_URL="http://localhost:8080/webhook"
@@ -42,3 +42,10 @@ npm run dev
 ```
 
 Emulator should be available at http://localhost:8081/
+
+### Ollama docker
+docker compose down
+docker compose up -d --force-recreate
+
+docker logs -f ollama-model-puller
+
