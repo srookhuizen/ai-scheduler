@@ -1,5 +1,5 @@
 services:
-  # THE STABLE AUTOMATED AI ENGINE
+  # THE AUTOMATED AI ENGINE
   ollama:
     image: ollama/ollama:latest
     container_name: ollama-engine
@@ -7,7 +7,6 @@ services:
       - "11434:11434"
     volumes:
       - ollama-storage:/root/.ollama
-    # FIX: Explicitly forces the container kernel to evaluate text contexts using Amsterdam Daylight Saving time (UTC+2)
     environment:
       - TZ=Europe/Amsterdam
     entrypoint: [ "/bin/sh", "-c" ]
@@ -22,8 +21,24 @@ services:
     networks:
       - whatsapp-ai-network
 
+  postgres-db:
+    image: pgvector/pgvector:pg16
+    container_name: postgres-vector-db
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=ai_scheduler_db
+      - POSTGRES_USER=scheduler_user
+      - POSTGRES_PASSWORD=my_secure_password_123
+      - TZ=Europe/Amsterdam
+    volumes:
+      - postgres-storage:/var/lib/postgresql/data
+    networks:
+      - whatsapp-ai-network
+
 volumes:
   ollama-storage:
+  postgres-storage:
 
 networks:
   whatsapp-ai-network:

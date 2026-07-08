@@ -7,12 +7,15 @@ import nl.tss.ai_scheduler.dto.IncomingMessage;
 import nl.tss.ai_scheduler.dto.WebhookChange;
 import nl.tss.ai_scheduler.dto.WebhookEntry;
 import nl.tss.ai_scheduler.dto.WebhookPayload;
+import nl.tss.ai_scheduler.service.BookingService;
 import nl.tss.ai_scheduler.service.CalendarService;
 import nl.tss.ai_scheduler.service.WhatsappService;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.prompt.SystemPromptTemplate;
+import org.springframework.ai.tool.ToolCallbackProvider;
+import org.springframework.ai.tool.method.MethodToolCallbackProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
@@ -36,6 +39,7 @@ public class WhatsappWebhookController {
     private final WhatsappService apiService;
     private final ChatClient chatClient;
     private final CalendarService calendarService;
+    private final BookingService bookingService;
     private final MessageChatMemoryAdvisor memoryAdvisor;
 
     @Value("classpath:/prompts/scheduler-system-prompt.st")
@@ -98,13 +102,17 @@ public class WhatsappWebhookController {
                 "closingTime", "5:00 PM"
         )).getText();
 
+        ToolCallbackProvider calendarTools = MethodToolCallbackProvider.builder().toolObjects(calendarService).build();
+        ToolCallbackProvider bookingTools = MethodToolCallbackProvider.builder().toolObjects(bookingService).build();
+
         String responseMessage = Objects.requireNonNull(Objects.requireNonNull(chatClient.prompt()
                 .system(compiledSystemPrompt)
                 .advisors(advisorSpec -> advisorSpec
                         .advisors(memoryAdvisor)
                         .param(ChatMemory.CONVERSATION_ID, memoryId))
                 .user(message)
-                .tools(calendarService)
+                .tools(calendarTools.getToolCallbacks())
+                .tools(bookingTools.getToolCallbacks())
                 .call().chatResponse()).getResult()).getOutput().getText();
 
         apiService.sendTextMessage(senderNumber, responseMessage);

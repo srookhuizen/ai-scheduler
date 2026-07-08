@@ -9,6 +9,7 @@ import com.google.api.services.calendar.Calendar;
 import com.google.api.services.calendar.CalendarRequestInitializer;
 import com.google.api.services.calendar.CalendarScopes;
 import com.google.api.services.calendar.model.Event;
+import com.google.api.services.calendar.model.EventAttendee;
 import com.google.api.services.calendar.model.EventDateTime;
 import com.google.api.services.calendar.model.EventReminder;
 import com.google.auth.http.HttpCredentialsAdapter;
@@ -88,6 +89,9 @@ public class CalendarService {
 
         event.setStart(getEventDateTime(start));
         event.setEnd(getEventDateTime(end));
+
+        //EventAttendee attendee = new EventAttendee().setEmail(email).setDisplayName(customer.getName());
+        //event.setAttendees(Collections.singletonList(attendee));
 
         EventReminder[] reminderOverrides = new EventReminder[]{
                 new EventReminder().setMethod("email").setMinutes(60 * 24 * 7)
