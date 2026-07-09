@@ -1,10 +1,10 @@
-package nl.tss.ai_scheduler.service;
+package nl.codefield.ai_scheduler.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import nl.tss.ai_scheduler.dto.SendMessageRequest;
-import nl.tss.ai_scheduler.dto.SendMessageRequestText;
-import nl.tss.ai_scheduler.dto.SendMessageResponse;
+import nl.codefield.ai_scheduler.dto.SendMessageRequest;
+import nl.codefield.ai_scheduler.dto.SendMessageRequestText;
+import nl.codefield.ai_scheduler.dto.SendMessageResponse;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;

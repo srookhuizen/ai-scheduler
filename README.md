@@ -21,14 +21,14 @@ Calendar API and the Gemini AI engine:
   **Settings and Sharing**, scroll down to **Share with specific people**, and add your service
   account's email address (e.g., `my-service-account@://gserviceaccount.com`) with **Make changes and manage sharing** permission.
 * Also make sure the Time zone setting is set to the correct timezone.
-* **Configure Gemini AI Key**: Obtain an API key from
+* **Configure Gemini AI Key (when using Ollama, this is not needed)**: Obtain an API key from
   the [Google AI Studio API Keys Page](https://aistudio.google.com/api-keys). Save this key as an
   environment variable named `GEMINI_API_KEY` on your system.
+  If you want to use Google genAI i.s.o. Ollama, update the pom. Comment out the Ollama dependency, and enable Google genAI dependency.
+* **Using Ollama**: This project uses Ollama by default. Docker is set up to use Ollama.
 
 ### Whatsapp emulator
 git clone https://github.com/DonnC/wce-emulator
-
-
 export BOT_WEBHOOK_URL="http://localhost:8080/webhook"
 
 If not run already, run:
@@ -44,8 +44,14 @@ npm run dev
 Emulator should be available at http://localhost:8081/
 
 ### Ollama docker
+See [Ollama](https://ollama.com/) for more info.
+
+```bash
 docker compose down
 docker compose up -d --force-recreate
+```
 
+```bash
 docker logs -f ollama-model-puller
+```
 

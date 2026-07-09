@@ -1,7 +1,8 @@
-package nl.tss.ai_scheduler.model;
+package nl.codefield.ai_scheduler.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.util.List;
 
 @Entity

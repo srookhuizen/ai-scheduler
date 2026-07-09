@@ -1,11 +1,11 @@
-package nl.tss.ai_scheduler.service;
+package nl.codefield.ai_scheduler.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import nl.tss.ai_scheduler.model.Appointment;
-import nl.tss.ai_scheduler.model.Customer;
-import nl.tss.ai_scheduler.repository.AppointmentRepository;
-import nl.tss.ai_scheduler.repository.CustomerRepository;
+import nl.codefield.ai_scheduler.model.Appointment;
+import nl.codefield.ai_scheduler.model.Customer;
+import nl.codefield.ai_scheduler.repository.AppointmentRepository;
+import nl.codefield.ai_scheduler.repository.CustomerRepository;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.stereotype.Service;
@@ -20,10 +20,9 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class BookingService {
 
+    private static final DateTimeFormatter ISO_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm[:ss]");
     private final CustomerRepository customerRepository;
     private final AppointmentRepository appointmentRepository;
-
-    private static final DateTimeFormatter ISO_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm[:ss]");
 
     @Tool(name = "checkIncomingCustomerState", description = "Check if the incoming WhatsApp sender already exists in the database. Returns routing directives for the agent.")
     public String checkIncomingCustomerState(
@@ -82,7 +81,7 @@ public class BookingService {
         LocalDateTime localEnd = LocalDateTime.parse(end, ISO_FORMATTER);
 
         Appointment appointment = Appointment.builder()
-                .serviceType(summary) // Successfully saves the summary string to the DB
+                .serviceType(summary)
                 .appointmentStart(localStart)
                 .appointmentEnd(localEnd)
                 .customer(customer)

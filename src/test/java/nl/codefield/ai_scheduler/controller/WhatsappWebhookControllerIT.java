@@ -1,7 +1,7 @@
-package nl.tss.ai_scheduler.controller;
+package nl.codefield.ai_scheduler.controller;
 
-import nl.tss.ai_scheduler.service.CalendarService;
-import nl.tss.ai_scheduler.service.WhatsappService;
+import nl.codefield.ai_scheduler.service.CalendarService;
+import nl.codefield.ai_scheduler.service.WhatsappService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -40,7 +40,6 @@ class WhatsappWebhookControllerIT {
     @Autowired
     private MockMvc mockMvc;
 
-    // Spring Boot 4.1.0 Mockito overschrijvingen
     @MockitoBean
     private WhatsappService whatsappService;
 
@@ -56,7 +55,6 @@ class WhatsappWebhookControllerIT {
     @Value("classpath:whatsapp-incoming-message.json")
     private Resource whatsappIncomingMessageResource;
 
-    // Voorkomt de NullPointerException door lege ChatOptions te serveren aan de ChatClient builder
     @BeforeEach
     void setUp() {
         when(chatModel.getOptions()).thenReturn(ChatOptions.builder().build());
@@ -64,7 +62,6 @@ class WhatsappWebhookControllerIT {
 
     @Test
     void testWebhookVerification_Success() throws Exception {
-        // Test de GET-handshake die WCE en Meta gebruiken om je endpoint lokaal te valideren
         mockMvc.perform(get("/webhook")
                         .param("hub.mode", "subscribe")
                         .param("hub.verify_token", "my-secret-wce-verify-token")

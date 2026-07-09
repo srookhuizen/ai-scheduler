@@ -1,17 +1,18 @@
-package nl.tss.ai_scheduler.controller;
+package nl.codefield.ai_scheduler.controller;
 
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import nl.tss.ai_scheduler.dto.IncomingMessage;
-import nl.tss.ai_scheduler.dto.WebhookChange;
-import nl.tss.ai_scheduler.dto.WebhookEntry;
-import nl.tss.ai_scheduler.dto.WebhookPayload;
-import nl.tss.ai_scheduler.service.BookingService;
-import nl.tss.ai_scheduler.service.CalendarService;
-import nl.tss.ai_scheduler.service.WhatsappService;
+import nl.codefield.ai_scheduler.dto.IncomingMessage;
+import nl.codefield.ai_scheduler.dto.WebhookChange;
+import nl.codefield.ai_scheduler.dto.WebhookEntry;
+import nl.codefield.ai_scheduler.dto.WebhookPayload;
+import nl.codefield.ai_scheduler.service.BookingService;
+import nl.codefield.ai_scheduler.service.CalendarService;
+import nl.codefield.ai_scheduler.service.WhatsappService;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
+import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
+import org.springframework.ai.chat.client.advisor.vectorstore.VectorStoreChatMemoryAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.prompt.SystemPromptTemplate;
 import org.springframework.ai.tool.ToolCallbackProvider;
@@ -41,6 +42,8 @@ public class WhatsappWebhookController {
     private final CalendarService calendarService;
     private final BookingService bookingService;
     private final MessageChatMemoryAdvisor memoryAdvisor;
+    private final QuestionAnswerAdvisor questionAnswerAdvisor;
+    private final VectorStoreChatMemoryAdvisor vectorStoreChatMemoryAdvisor;
 
     @Value("classpath:/prompts/scheduler-system-prompt.st")
     private Resource systemPromptResource;
@@ -106,9 +109,9 @@ public class WhatsappWebhookController {
         ToolCallbackProvider bookingTools = MethodToolCallbackProvider.builder().toolObjects(bookingService).build();
 
         String responseMessage = Objects.requireNonNull(Objects.requireNonNull(chatClient.prompt()
-                .system(compiledSystemPrompt)
+                .system(Objects.requireNonNull(compiledSystemPrompt))
                 .advisors(advisorSpec -> advisorSpec
-                        .advisors(memoryAdvisor)
+                        .advisors(questionAnswerAdvisor, memoryAdvisor)
                         .param(ChatMemory.CONVERSATION_ID, memoryId))
                 .user(message)
                 .tools(calendarTools.getToolCallbacks())

@@ -1,5 +1,4 @@
 services:
-  # THE AUTOMATED AI ENGINE
   ollama:
     image: ollama/ollama:latest
     container_name: ollama-engine
@@ -16,6 +15,8 @@ services:
        until ollama list >/dev/null 2>&1; do sleep 1; done &&
        echo '==> Connection active! Pre-loading agentic qwen2.5:3b weights...' &&
        ollama pull qwen2.5:3b &&
+       echo '==> Pre-loading mxbai-embed-large embedding weights for Vector Store...' &&
+       ollama pull mxbai-embed-large &&
        echo '==> AI engine initialization complete!' &&
        wait"
     networks:

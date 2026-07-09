@@ -1,4 +1,4 @@
-package nl.tss.ai_scheduler.service;
+package nl.codefield.ai_scheduler.service;
 
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
@@ -9,7 +9,6 @@ import com.google.api.services.calendar.Calendar;
 import com.google.api.services.calendar.CalendarRequestInitializer;
 import com.google.api.services.calendar.CalendarScopes;
 import com.google.api.services.calendar.model.Event;
-import com.google.api.services.calendar.model.EventAttendee;
 import com.google.api.services.calendar.model.EventDateTime;
 import com.google.api.services.calendar.model.EventReminder;
 import com.google.auth.http.HttpCredentialsAdapter;

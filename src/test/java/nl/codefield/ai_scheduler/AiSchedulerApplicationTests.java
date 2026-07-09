@@ -1,4 +1,4 @@
-package nl.tss.ai_scheduler;
+package nl.codefield.ai_scheduler;
 
 import org.junit.Ignore;
 import org.junit.jupiter.api.Test;

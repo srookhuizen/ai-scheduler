@@ -1,8 +1,7 @@
-package nl.tss.ai_scheduler.service;
+package nl.codefield.ai_scheduler.service;
 
 import com.google.api.services.calendar.model.Event;
 import java.io.IOException;
-import java.security.GeneralSecurityException;
 import java.time.LocalDateTime;
 import java.util.List;
 

@@ -1,4 +1,4 @@
-package nl.tss.ai_scheduler.config;
+package nl.codefield.ai_scheduler.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

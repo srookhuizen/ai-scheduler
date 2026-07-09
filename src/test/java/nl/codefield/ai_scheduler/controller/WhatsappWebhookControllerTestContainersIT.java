@@ -1,7 +1,7 @@
-package nl.tss.ai_scheduler.controller;
+package nl.codefield.ai_scheduler.controller;
 
-import nl.tss.ai_scheduler.service.CalendarService;
-import nl.tss.ai_scheduler.service.WhatsappService;
+import nl.codefield.ai_scheduler.service.CalendarService;
+import nl.codefield.ai_scheduler.service.WhatsappService;
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.beans.factory.annotation.Autowired;
