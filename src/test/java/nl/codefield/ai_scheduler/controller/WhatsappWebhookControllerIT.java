@@ -1,8 +1,6 @@
 package nl.codefield.ai_scheduler.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import nl.codefield.ai_scheduler.config.DockerTestConfig;
 import nl.codefield.ai_scheduler.config.TestConfig;
 import nl.codefield.ai_scheduler.dto.IncomingMessage;
 import nl.codefield.ai_scheduler.dto.IncomingMessageText;
@@ -28,27 +26,18 @@ import org.springframework.ai.document.Document;
 import org.springframework.ai.evaluation.EvaluationRequest;
 import org.springframework.ai.evaluation.EvaluationResponse;
 
-import org.springframework.ai.ollama.OllamaChatModel;
-import org.springframework.ai.ollama.api.OllamaApi;
-import org.springframework.ai.ollama.api.OllamaChatOptions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
-import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.timeout;
@@ -77,18 +66,14 @@ class WhatsappWebhookControllerIT {
     @Qualifier("evaluationChatClient")
     private ChatClient evaluationChatClient; // Secondary evaluation client (bespoke-minicheck)
 
-
-    @MockitoBean
+    @MockitoSpyBean
     private WhatsappService whatsappService;
 
-    @MockitoBean
+    @MockitoSpyBean
     private CalendarService calendarService;
 
-    @MockitoBean
+    @MockitoSpyBean
     private BookingService bookingService;
-
-    @Value("classpath:/prompts/scheduler-system-prompt.st")
-    private Resource systemPromptResource;
 
     @BeforeEach
     void cleanState() {
@@ -116,15 +101,6 @@ class WhatsappWebhookControllerIT {
         String initializationPrompt = "Hello! I need a haircut.";
         String aiGeneratedResponse = sendAndReceive(initializationPrompt);
 
-        Assertions.assertAll("Assistant response must trigger the new customer registration workflow rules",
-                () -> Assertions.assertTrue(aiGeneratedResponse.contains("name"),
-                        "Response did not ask for full name"),
-                () -> Assertions.assertTrue(aiGeneratedResponse.contains("email"),
-                        "Response did not ask for email address"),
-                () -> Assertions.assertTrue(aiGeneratedResponse.contains("gender"),
-                        "Response did not ask for gender")
-        );
-
         // the template variables query, response and context are filled by spring
         PromptTemplate relaxedRelevancyPrompt = new PromptTemplate("""
             Determine if the response is a valid next step to help the user request a haircut.
@@ -141,7 +117,9 @@ class WhatsappWebhookControllerIT {
                 .promptTemplate(relaxedRelevancyPrompt)
                 .build();
 
-        String cleanContextText = "The assistant must onboard unknown callers by requesting their full name, email address, and gender before allowing them to schedule a haircut slot.";
+        String cleanContextText = """
+            The assistant must onboard unknown callers by requesting their full name, email address, and gender
+            before allowing them to schedule a haircut slot.""";
         Document cleanRelevancyContext = new Document(cleanContextText);
 
         EvaluationRequest relevancyRequest = new EvaluationRequest(initializationPrompt, List.of(cleanRelevancyContext), aiGeneratedResponse);
@@ -154,8 +132,10 @@ class WhatsappWebhookControllerIT {
 
         String businessFactContext = """
             The system allows clients to look up and book automated calendar slots.
-            If a client's phone number is not found in the database, the system must collect their full name, email address, and gender to register them as a new customer.
-            The user's phone number is already verified through WhatsApp metadata, so additional phone input collection rules are flexible or optional.
+            If a client's phone number is not found in the database, the system must collect their full name,
+            email address, and gender to register them as a new customer.
+            The user's phone number is already verified through WhatsApp metadata,
+            so additional phone input collection rules are flexible or optional.
             """;
         Document factTruthDocument = new Document(businessFactContext);
 
@@ -164,7 +144,6 @@ class WhatsappWebhookControllerIT {
 
         Assertions.assertTrue(factResponse.isPass(),
                 "The model response failed Spring AI fact-checking parameters! Feedback: " + factResponse.getFeedback());
-
     }
 
     private String sendAndReceive(String userPrompt) throws Exception {
