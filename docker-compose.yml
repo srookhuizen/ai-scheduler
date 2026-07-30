@@ -11,20 +11,20 @@ services:
     entrypoint: [ "/bin/sh", "-c" ]
     command: >
       "ollama serve &
-       echo '==> Waiting for internal server socket to bind...' &&
        until ollama list >/dev/null 2>&1; do sleep 1; done &&
-       echo '==> Connection active! Pre-loading agentic qwen2.5:3b weights...' &&
        ollama pull qwen2.5:3b &&
-       echo '==> Pre-loading mxbai-embed-large embedding weights for Vector Store...' &&
-       ollama pull mxbai-embed-large &&
+       ollama pull bespoke-minicheck &&
+       echo '==> Pre-warming model weights in memory...' &&
+       ollama run qwen2.5:3b '' &&
+       ollama run bespoke-minicheck '' &&
        echo '==> AI engine initialization complete!' &&
        wait"
     networks:
       - whatsapp-ai-network
 
   postgres-db:
-    image: pgvector/pgvector:pg16
-    container_name: postgres-vector-db
+    image: postgres:16-alpine
+    container_name: postgres-standard-db
     ports:
       - "5432:5432"
     environment:

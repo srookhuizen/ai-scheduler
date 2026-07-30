@@ -11,8 +11,6 @@ import nl.codefield.ai_scheduler.service.CalendarService;
 import nl.codefield.ai_scheduler.service.WhatsappService;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
-import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
-import org.springframework.ai.chat.client.advisor.vectorstore.VectorStoreChatMemoryAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.prompt.SystemPromptTemplate;
 import org.springframework.ai.tool.ToolCallbackProvider;
@@ -42,8 +40,7 @@ public class WhatsappWebhookController {
     private final CalendarService calendarService;
     private final BookingService bookingService;
     private final MessageChatMemoryAdvisor memoryAdvisor;
-    private final QuestionAnswerAdvisor questionAnswerAdvisor;
-    private final VectorStoreChatMemoryAdvisor vectorStoreChatMemoryAdvisor;
+    //private final QuestionAnswerAdvisor questionAnswerAdvisor;
 
     @Value("classpath:/prompts/scheduler-system-prompt.st")
     private Resource systemPromptResource;
@@ -92,7 +89,7 @@ public class WhatsappWebhookController {
         return ResponseEntity.ok().build();
     }
 
-    private void sendResponse(String memoryId, String message, String senderNumber) {
+    private void sendResponse(String memoryId, String message, String phoneNumber) {
         String dynamicTimestamp = ZonedDateTime.now(ZoneId.of("Europe/Amsterdam"))
                 .format(DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy 'at' hh:mm a z"));
 
@@ -101,23 +98,22 @@ public class WhatsappWebhookController {
         SystemPromptTemplate template = new SystemPromptTemplate(systemPromptResource);
         String compiledSystemPrompt = template.createMessage(Map.of(
                 "currentDate", dynamicTimestamp,
-                "openingTime", "9:00 AM",
-                "closingTime", "5:00 PM"
+                "phoneNumber", phoneNumber
         )).getText();
 
         ToolCallbackProvider calendarTools = MethodToolCallbackProvider.builder().toolObjects(calendarService).build();
         ToolCallbackProvider bookingTools = MethodToolCallbackProvider.builder().toolObjects(bookingService).build();
 
-        String responseMessage = Objects.requireNonNull(Objects.requireNonNull(chatClient.prompt()
-                .system(Objects.requireNonNull(compiledSystemPrompt))
+        String responseMessage = chatClient.prompt()
+                .system(compiledSystemPrompt)
                 .advisors(advisorSpec -> advisorSpec
-                        .advisors(questionAnswerAdvisor, memoryAdvisor)
+                        .advisors(memoryAdvisor)
                         .param(ChatMemory.CONVERSATION_ID, memoryId))
                 .user(message)
                 .tools(calendarTools.getToolCallbacks())
                 .tools(bookingTools.getToolCallbacks())
-                .call().chatResponse()).getResult()).getOutput().getText();
+                .call().chatResponse().getResult().getOutput().getText();
 
-        apiService.sendTextMessage(senderNumber, responseMessage);
+        apiService.sendTextMessage(phoneNumber, responseMessage);
     }
 }

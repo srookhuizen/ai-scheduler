@@ -7,6 +7,7 @@ For further reference, please consider the following sections:
 * [Gemini API key](https://aistudio.google.com/api-keys?project=gen-lang-client-0447965394)
 * [Spring Google GenAI](https://docs.spring.io/spring-ai/reference/api/chat/google-genai-chat.html)
 * [Gemini models](https://ai.google.dev/gemini-api/docs/models)
+* [Spring AI examples](https://github.com/spring-projects/spring-ai/tree/main)
 
 ### Prerequisites
 

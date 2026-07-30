@@ -1,5 +1,6 @@
 package nl.codefield.ai_scheduler.service;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import nl.codefield.ai_scheduler.model.Appointment;
@@ -24,23 +25,20 @@ public class BookingService {
     private final CustomerRepository customerRepository;
     private final AppointmentRepository appointmentRepository;
 
-    @Tool(name = "checkIncomingCustomerState", description = "Check if the incoming WhatsApp sender already exists in the database. Returns routing directives for the agent.")
-    public String checkIncomingCustomerState(
-            @ToolParam(description = "The raw senderNumber extracted from the WhatsApp incoming webhook metadata envelope.") String senderNumber) {
+    @Tool(name = "findCustomerByPhoneNumber", description = "Check if a Customer exist in the database for the given phoneNumber.")
+    public Customer findCustomerByPhoneNumber(@NotNull @ToolParam(description = "The phone number of the customer") String phoneNumber) {
 
-        log.info("Checking incoming WhatsApp sender authentication token state: {}", senderNumber);
+        log.info("Checking incoming WhatsApp sender authentication token state: {}", phoneNumber);
 
-        Optional<Customer> customerByWhatsapp = customerRepository.findByPhoneNumber(senderNumber);
+        Optional<Customer> customerByWhatsapp = customerRepository.findByPhoneNumber(phoneNumber);
         if (customerByWhatsapp.isPresent()) {
             Customer customer = customerByWhatsapp.get();
             log.info("Returning customer detected: {} (Email: {})", customer.getName(), customer.getEmail());
-            return "MATCH_FOUND: This is a returning customer named " + customer.getName() +
-                    " with email " + customer.getEmail() + ". You may skip data onboarding questions and proceed straight to scheduling loops.";
+            return customer;
         }
 
         log.info("WhatsApp number unmapped. Instructing agent to request an email lookup sequence.");
-        return "NO_WHATSAPP_MATCH: This phone number is not linked to a profile. " +
-                "ACTION REQUIRED: Ask the customer politely to provide their email address so we can check for an existing account profile.";
+        return null;
     }
 
     @Tool(name = "registerNewCustomer", description = "Register or update a customer profile in the database with their personal details.")
@@ -60,9 +58,10 @@ public class BookingService {
         customer.setGender(gender);
         customer.setPhoneNumber(phone);
 
-        customerRepository.save(customer);
-        return "SUCCESS: Customer " + name + " has been successfully registered in the database.";
+        Customer savedCustomer = customerRepository.save(customer);
+        return "SUCCESS: Customer " + savedCustomer.getName() + " has been successfully registered in the database.";
     }
+
 
     @Tool(name = "saveAppointmentToDb", description = "Save the finalized appointment record into the local internal database.")
     @Transactional
