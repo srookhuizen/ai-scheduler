@@ -27,7 +27,7 @@ Calendar API and the Gemini AI engine:
   environment variable named `GEMINI_API_KEY` on your system.
 * **Using Ollama or GenAI**: Change the ai to use by setting the 'spring.profiles.active' in the properties file.
 
-### Whatsapp emulator
+### Whatsapp emulator (only needed if running outside docker)
 git clone https://github.com/DonnC/wce-emulator
 export BOT_WEBHOOK_URL="http://localhost:8081/webhook"
 
@@ -41,7 +41,7 @@ Otherwise:
 npm run dev
 ```
 
-Emulator should be available at http://localhost:8081/
+Emulator should be available at http://localhost:8080/
 
 ### Ollama docker
 See [Ollama](https://ollama.com/) for more info.
