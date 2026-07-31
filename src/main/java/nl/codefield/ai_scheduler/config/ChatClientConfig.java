@@ -6,31 +6,33 @@ import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
 import org.springframework.ai.chat.memory.InMemoryChatMemoryRepository;
 import org.springframework.ai.chat.memory.MessageWindowChatMemory;
+import org.springframework.ai.google.genai.GoogleGenAiChatModel;
+import org.springframework.ai.ollama.OllamaChatModel;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
 
 @Configuration
 @RequiredArgsConstructor
 public class ChatClientConfig {
 
     @Bean
-    public ChatClient chatClient(ChatClient.Builder builder) {
-        return builder
-                // Automatically logs the user text, system text, and advisor context
-                .defaultAdvisors(new SimpleLoggerAdvisor()).build();
+    @Profile("google")
+    public ChatClient googleChatClient(GoogleGenAiChatModel googleChatModel) {
+        return ChatClient.builder(googleChatModel)
+                .defaultAdvisors(new SimpleLoggerAdvisor())
+                .build();
     }
 
-    /*@Bean
-    public QuestionAnswerAdvisor questionAnswerAdvisor(VectorStore vectorStore) {
-        // This is a read only advisor
-        return QuestionAnswerAdvisor.builder(vectorStore).build();
-    }*/
-
-    /*@Bean
-    public MessageChatMemoryAdvisor memoryAdvisor(ChatMemory chatMemory) {
-        return MessageChatMemoryAdvisor.builder(chatMemory)
+    @Bean
+    @Profile("ollama")
+    public ChatClient ollamaChatClient(OllamaChatModel ollamaChatModel) {
+        return ChatClient.builder(ollamaChatModel)
+                .defaultAdvisors(new SimpleLoggerAdvisor())
                 .build();
-    }*/
+    }
+
 
     @Bean
     public MessageChatMemoryAdvisor memoryAdvisor() {

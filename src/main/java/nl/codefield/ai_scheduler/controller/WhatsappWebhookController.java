@@ -27,7 +27,6 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 @RequiredArgsConstructor
 @RestController
@@ -40,7 +39,6 @@ public class WhatsappWebhookController {
     private final CalendarService calendarService;
     private final BookingService bookingService;
     private final MessageChatMemoryAdvisor memoryAdvisor;
-    //private final QuestionAnswerAdvisor questionAnswerAdvisor;
 
     @Value("classpath:/prompts/scheduler-system-prompt.st")
     private Resource systemPromptResource;

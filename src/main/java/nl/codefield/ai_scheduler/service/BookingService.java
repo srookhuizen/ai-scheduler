@@ -28,16 +28,16 @@ public class BookingService {
     @Tool(name = "findCustomerByPhoneNumber", description = "Check if a Customer exist in the database for the given phoneNumber.")
     public Customer findCustomerByPhoneNumber(@NotNull @ToolParam(description = "The phone number of the customer") String phoneNumber) {
 
-        log.info("Checking incoming WhatsApp sender authentication token state: {}", phoneNumber);
+        log.info("Finding customer for phoneNumber: {}", phoneNumber);
 
-        Optional<Customer> customerByWhatsapp = customerRepository.findByPhoneNumber(phoneNumber);
-        if (customerByWhatsapp.isPresent()) {
-            Customer customer = customerByWhatsapp.get();
-            log.info("Returning customer detected: {} (Email: {})", customer.getName(), customer.getEmail());
+        Optional<Customer> optionalCustomer = customerRepository.findByPhoneNumber(phoneNumber);
+        if (optionalCustomer.isPresent()) {
+            Customer customer = optionalCustomer.get();
+            log.info("Customer found {}", customer);
             return customer;
         }
 
-        log.info("WhatsApp number unmapped. Instructing agent to request an email lookup sequence.");
+        log.info("Customer not found for: {}", phoneNumber);
         return null;
     }
 
@@ -46,19 +46,16 @@ public class BookingService {
     public String registerNewCustomer(
             @ToolParam(description = "The customer's complete full name.") String name,
             @ToolParam(description = "The customer's gender (e.g., Male, Female, Other).") String gender,
-            @ToolParam(description = "The customer's contact telephone phone number.") String phone,
+            @ToolParam(description = "The customer's contact telephone phone number.") String phoneNumber,
             @ToolParam(description = "The customer's personal email address.") String email) {
 
-        log.info("LLM tool execution: registerNewCustomer for profile: {}", email);
 
-        Customer customer = customerRepository.findByEmail(email)
-                .orElseGet(() -> Customer.builder().email(email).build());
-
-        customer.setName(name);
-        customer.setGender(gender);
-        customer.setPhoneNumber(phone);
+        Customer customer = customerRepository.findByPhoneNumber(phoneNumber)
+                .orElseGet(() -> Customer.builder().name(name).gender(gender).phoneNumber(phoneNumber).email(email).build());
+        log.info("LLM tool execution: registerNewCustomer for profile: {}", customer);
 
         Customer savedCustomer = customerRepository.save(customer);
+        log.info("Successfully registered customer: {}", savedCustomer);
         return "SUCCESS: Customer " + savedCustomer.getName() + " has been successfully registered in the database.";
     }
 
@@ -66,8 +63,8 @@ public class BookingService {
     @Tool(name = "saveAppointmentToDb", description = "Save the finalized appointment record into the local internal database.")
     @Transactional
     public String saveAppointmentToDb(
-            @ToolParam(description = "The main title summary of the appointment (e.g., 'Haircut').") String summary,
-            @ToolParam(description = "The customer's registered email address to link the relational foreign key.") String email,
+            @ToolParam(description = "The main title summary of the appointment.") String summary,
+            @ToolParam(description = "The customer's registered email address.") String email,
             @ToolParam(description = "The exact start date and time string in ISO-8601 format.") String start,
             @ToolParam(description = "The exact end date and time string in ISO-8601 format.") String end) {
 
@@ -98,10 +95,5 @@ public class BookingService {
             return "EMAIL_MATCH_FOUND: Profile exists. Name: " + c.getName() + ", Gender: " + c.getGender() + ", Phone: " + c.getPhoneNumber() + ". You may link this session and proceed to scheduling loops.";
         }
         return "EMAIL_NOT_FOUND: No profile exists for this email. ACTION REQUIRED: This is a completely brand new client. You must ask for their full name, gender, and contact phone number, and then call registerNewCustomer.";
-    }
-
-    @Tool(name = "getCustomerByPhoneNumber", description = "Find a customer by phoneNumber string.")
-    public Optional<Customer> getCustomerByPhoneNumber(@ToolParam(description = "The plain phone text query.") String phoneNumber) {
-        return customerRepository.findByPhoneNumber(phoneNumber);
     }
 }

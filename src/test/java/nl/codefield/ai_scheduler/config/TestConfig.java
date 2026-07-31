@@ -4,9 +4,12 @@ import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.ollama.OllamaChatModel;
 import org.springframework.ai.ollama.api.OllamaApi;
 import org.springframework.ai.ollama.api.OllamaChatOptions;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
 
 @TestConfiguration
 public class TestConfig {
@@ -29,5 +32,20 @@ public class TestConfig {
                 .build();
 
         return ChatClient.builder(evaluationModel).build();
+    }
+
+    @Bean
+    @Primary
+    public ChatClient testPrimaryChatClient(
+            ObjectProvider<ChatClient> chatClientProvider,
+            @Qualifier("evaluationChatClient") ObjectProvider<ChatClient> evaluationProvider) {
+
+        // Find the production client by filtering out the evaluation client
+        ChatClient evaluationClient = evaluationProvider.getIfAvailable();
+
+        return chatClientProvider.orderedStream()
+                .filter(client -> client != evaluationClient)
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("No production ChatClient found active in profiles!"));
     }
 }

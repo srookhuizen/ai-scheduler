@@ -25,12 +25,11 @@ Calendar API and the Gemini AI engine:
 * **Configure Gemini AI Key (when using Ollama, this is not needed)**: Obtain an API key from
   the [Google AI Studio API Keys Page](https://aistudio.google.com/api-keys). Save this key as an
   environment variable named `GEMINI_API_KEY` on your system.
-  If you want to use Google genAI i.s.o. Ollama, update the pom. Comment out the Ollama dependency, and enable Google genAI dependency.
-* **Using Ollama**: This project uses Ollama by default. Docker is set up to use Ollama.
+* **Using Ollama or GenAI**: Change the ai to use by setting the 'spring.profiles.active' in the properties file.
 
 ### Whatsapp emulator
 git clone https://github.com/DonnC/wce-emulator
-export BOT_WEBHOOK_URL="http://localhost:8080/webhook"
+export BOT_WEBHOOK_URL="http://localhost:8081/webhook"
 
 If not run already, run:
 ```bash

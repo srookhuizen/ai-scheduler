@@ -8,6 +8,7 @@ import nl.codefield.ai_scheduler.dto.WebhookChange;
 import nl.codefield.ai_scheduler.dto.WebhookChangeValue;
 import nl.codefield.ai_scheduler.dto.WebhookEntry;
 import nl.codefield.ai_scheduler.dto.WebhookPayload;
+import nl.codefield.ai_scheduler.repository.CustomerRepository;
 import nl.codefield.ai_scheduler.service.BookingService;
 import nl.codefield.ai_scheduler.service.CalendarService;
 import nl.codefield.ai_scheduler.service.WhatsappService;
@@ -36,19 +37,19 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.timeout;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @AutoConfigureMockMvc
-@ActiveProfiles("test")
+@ActiveProfiles({"test", "ollama"})
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @Import({
         //DockerTestConfig.class
@@ -63,8 +64,14 @@ class WhatsappWebhookControllerIT {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Autowired
+    private ChatClient chatClient;
+
+    @Autowired
     @Qualifier("evaluationChatClient")
     private ChatClient evaluationChatClient; // Secondary evaluation client (bespoke-minicheck)
+
+    @Autowired
+    private CustomerRepository customerRepository;
 
     @MockitoSpyBean
     private WhatsappService whatsappService;
@@ -78,6 +85,7 @@ class WhatsappWebhookControllerIT {
     @BeforeEach
     void cleanState() {
         Mockito.reset(whatsappService, calendarService, bookingService);
+        customerRepository.deleteAll();
     }
 
     // ==========================================
@@ -144,6 +152,39 @@ class WhatsappWebhookControllerIT {
 
         Assertions.assertTrue(factResponse.isPass(),
                 "The model response failed Spring AI fact-checking parameters! Feedback: " + factResponse.getFeedback());
+
+        // Step 2, register the new customer
+        // Reset service mocks to capture the state change cleanly for the second turn
+        reset(whatsappService);
+        String userOnboardingDetailsPrompt = "My name is John Doe, my email address is john.doe@example.com, and I am a male.";
+        String nextWorkflowResponse = sendAndReceive(userOnboardingDetailsPrompt);
+
+        verify(bookingService).registerNewCustomer(argThat(gender -> gender.equalsIgnoreCase("John Doe")),
+                argThat(gender -> gender.equalsIgnoreCase("male")),
+                eq("31612345678"),
+                eq("john.doe@example.com"));
+
+        String registrationContextTruth = """
+            The customer registration workflow is complete.
+            The assistant acknowledges that the user wants a haircut.
+            The assistant is now asking the user for their preferred appointment date and time.
+            """;
+
+        factTruthDocument = new Document(registrationContextTruth);
+
+        factRequest = new EvaluationRequest(userOnboardingDetailsPrompt, List.of(factTruthDocument), nextWorkflowResponse);
+        factResponse = factCheckingEvaluator.evaluate(factRequest);
+
+        Assertions.assertTrue(factResponse.isPass(),
+                "The registration-to-booking transition failed fact-checking parameters! Feedback: " + factResponse.getFeedback());
+
+        // Step 3, date and time for the appointment
+        reset(whatsappService);
+        String dateAndTimePrompt = "Can we put it for tomorrow 3 PM?";
+        String dateAndTimeResponse = sendAndReceive(dateAndTimePrompt);
+
+        verify(calendarService).getEvents(any(LocalDateTime.class), any(LocalDateTime.class));
+
     }
 
     private String sendAndReceive(String userPrompt) throws Exception {
