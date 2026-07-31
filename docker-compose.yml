@@ -37,6 +37,26 @@ services:
     networks:
       - whatsapp-ai-network
 
+  wce-emulator:
+    image: node:20-alpine
+    container_name: whatsapp-cloud-emulator
+    working_dir: /app
+    ports:
+      - "3001:3001"
+      - "8080:8080"
+    environment:
+      - PORT=3001
+      - TZ=Europe/Amsterdam
+      - BOT_WEBHOOK_URL=http://hostpc:8081/webhook
+    extra_hosts:
+      # This dynamically routes 'hostpc' to your computer's loopback, regardless of your IP
+      - "hostpc:host-gateway"
+    entrypoint: [ "/bin/sh", "-c" ]
+    command: [ "npx --yes degit DonnC/wce-emulator#main . && npm install && (npm run postinstall || true) && npm run dev" ]
+    restart: unless-stopped
+    networks:
+      - whatsapp-ai-network
+
 volumes:
   ollama-storage:
   postgres-storage:
