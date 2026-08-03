@@ -26,19 +26,12 @@ public class BookingService {
     private final AppointmentRepository appointmentRepository;
 
     @Tool(name = "findCustomerByPhoneNumber", description = "Check if a Customer exist in the database for the given phoneNumber.")
-    public Customer findCustomerByPhoneNumber(@NotNull @ToolParam(description = "The phone number of the customer") String phoneNumber) {
+    public Optional<Customer> findCustomerByPhoneNumber(@NotNull @ToolParam(description = "The phone number of the customer") String phoneNumber) {
 
         log.info("Finding customer for phoneNumber: {}", phoneNumber);
-
-        Optional<Customer> optionalCustomer = customerRepository.findByPhoneNumber(phoneNumber);
-        if (optionalCustomer.isPresent()) {
-            Customer customer = optionalCustomer.get();
-            log.info("Customer found {}", customer);
-            return customer;
-        }
-
-        log.info("Customer not found for: {}", phoneNumber);
-        return null;
+        Optional<Customer> foundCustomer = customerRepository.findByPhoneNumber(phoneNumber);
+        log.info("Found customer for phoneNumber: {}", foundCustomer.orElse(null));
+        return foundCustomer;
     }
 
     @Tool(name = "registerNewCustomer", description = "Register or update a customer profile in the database with their personal details.")

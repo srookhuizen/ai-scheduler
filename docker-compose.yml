@@ -12,10 +12,10 @@ services:
     command: >
       "ollama serve &
        until ollama list >/dev/null 2>&1; do sleep 1; done &&
-       ollama pull qwen2.5:3b &&
+       ollama pull gemma4:e2b &&
        ollama pull bespoke-minicheck &&
        echo '==> Pre-warming model weights in memory...' &&
-       ollama run qwen2.5:3b '' &&
+       ollama run gemma4:e2b '' &&
        ollama run bespoke-minicheck '' &&
        echo '==> AI engine initialization complete!' &&
        wait"
