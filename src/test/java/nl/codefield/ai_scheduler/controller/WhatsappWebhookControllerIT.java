@@ -183,7 +183,7 @@ class WhatsappWebhookControllerIT {
         String dateAndTimePrompt = "Can we put it for tomorrow 3 PM?";
         String dateAndTimeResponse = sendAndReceive(dateAndTimePrompt);
 
-        verify(calendarService).getEvents(any(LocalDateTime.class), any(LocalDateTime.class));
+        verify(calendarService).getEvents(any(String.class), any(LocalDateTime.class));
 
     }
 

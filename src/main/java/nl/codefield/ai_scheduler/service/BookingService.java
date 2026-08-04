@@ -1,38 +1,30 @@
 package nl.codefield.ai_scheduler.service;
 
-import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import nl.codefield.ai_scheduler.event.AppointmentSavedEvent;
 import nl.codefield.ai_scheduler.model.Appointment;
 import nl.codefield.ai_scheduler.model.Customer;
+import nl.codefield.ai_scheduler.model.Service;
 import nl.codefield.ai_scheduler.repository.AppointmentRepository;
-import nl.codefield.ai_scheduler.repository.CustomerRepository;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
-import org.springframework.stereotype.Service;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Optional;
 
 @Slf4j
-@Service
+@org.springframework.stereotype.Service
 @RequiredArgsConstructor
 public class BookingService {
 
     private static final DateTimeFormatter ISO_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm[:ss]");
-    private final CustomerRepository customerRepository;
+    private final CustomerService customerService;
     private final AppointmentRepository appointmentRepository;
-
-    @Tool(name = "findCustomerByPhoneNumber", description = "Check if a Customer exist in the database for the given phoneNumber.")
-    public Optional<Customer> findCustomerByPhoneNumber(@NotNull @ToolParam(description = "The phone number of the customer") String phoneNumber) {
-
-        log.info("Finding customer for phoneNumber: {}", phoneNumber);
-        Optional<Customer> foundCustomer = customerRepository.findByPhoneNumber(phoneNumber);
-        log.info("Found customer for phoneNumber: {}", foundCustomer.orElse(null));
-        return foundCustomer;
-    }
+    private final ServiceService serviceService;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Tool(name = "registerNewCustomer", description = "Register or update a customer profile in the database with their personal details.")
     @Transactional
@@ -43,50 +35,42 @@ public class BookingService {
             @ToolParam(description = "The customer's personal email address.") String email) {
 
 
-        Customer customer = customerRepository.findByPhoneNumber(phoneNumber)
+        Customer customer = customerService.findByPhoneNumber(phoneNumber)
                 .orElseGet(() -> Customer.builder().name(name).gender(gender).phoneNumber(phoneNumber).email(email).build());
         log.info("LLM tool execution: registerNewCustomer for profile: {}", customer);
 
-        Customer savedCustomer = customerRepository.save(customer);
+        Customer savedCustomer = customerService.save(customer);
         log.info("Successfully registered customer: {}", savedCustomer);
         return "SUCCESS: Customer " + savedCustomer.getName() + " has been successfully registered in the database.";
     }
 
 
-    @Tool(name = "saveAppointmentToDb", description = "Save the finalized appointment record into the local internal database.")
+    @Tool(name = "saveAppointmentToDb", description = "Save the finalized appointment record into the local internal database. Java will automatically compute the ending time.")
     @Transactional
     public String saveAppointmentToDb(
-            @ToolParam(description = "The main title summary of the appointment.") String summary,
-            @ToolParam(description = "The customer's registered email address.") String email,
-            @ToolParam(description = "The exact start date and time string in ISO-8601 format.") String start,
-            @ToolParam(description = "The exact end date and time string in ISO-8601 format.") String end) {
+            @ToolParam(description = "The specific name of the service requested by the user.") String service,
+            @ToolParam(description = "The customer's registered phoneNumber.") String phoneNumber,
+            @ToolParam(description = "The exact start date and time string in ISO-8601 format (YYYY-MM-DDTHH:mm:ss).") String start) {
 
-        log.info("LLM tool execution: saveAppointmentToDb for customer email: {}", email);
+        log.info("LLM tool execution: saveAppointmentToDb for customer phoneNumber: {} for service: {} at start: {}", phoneNumber, service, start);
 
-        Customer customer = customerRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("DATABASE ERROR: Cannot map appointment. Profile not found for email: " + email));
+        Customer customer = customerService.findByPhoneNumber(phoneNumber)
+                .orElseThrow(() -> new IllegalArgumentException("DATABASE ERROR: Cannot map appointment. Profile not found for phoneNumber: " + phoneNumber));
 
         LocalDateTime localStart = LocalDateTime.parse(start, ISO_FORMATTER);
-        LocalDateTime localEnd = LocalDateTime.parse(end, ISO_FORMATTER);
+        Service serviceObj = serviceService.findByName(service);
+        LocalDateTime localEnd = localStart.plusMinutes(serviceObj.getDuration());
 
         Appointment appointment = Appointment.builder()
-                .serviceType(summary)
+                .service(serviceObj)
                 .appointmentStart(localStart)
                 .appointmentEnd(localEnd)
                 .customer(customer)
                 .build();
 
-        appointmentRepository.save(appointment);
-        return "SUCCESS: Appointment record has been securely committed to the local database repository.";
-    }
+        Appointment savedAppointment = appointmentRepository.save(appointment);
+        eventPublisher.publishEvent(new AppointmentSavedEvent(this, savedAppointment));
 
-    @Tool(name = "getCustomerByEmail", description = "Find an existing customer account by their email address profile key.")
-    public String getCustomerByEmail(@ToolParam(description = "The email string to query.") String email) {
-        Optional<Customer> customerOpt = customerRepository.findByEmail(email);
-        if (customerOpt.isPresent()) {
-            Customer c = customerOpt.get();
-            return "EMAIL_MATCH_FOUND: Profile exists. Name: " + c.getName() + ", Gender: " + c.getGender() + ", Phone: " + c.getPhoneNumber() + ". You may link this session and proceed to scheduling loops.";
-        }
-        return "EMAIL_NOT_FOUND: No profile exists for this email. ACTION REQUIRED: This is a completely brand new client. You must ask for their full name, gender, and contact phone number, and then call registerNewCustomer.";
+        return "SUCCESS: Appointment record for " + service + " has been committed. Calculated slot: " + localStart + " to " + localEnd;
     }
 }

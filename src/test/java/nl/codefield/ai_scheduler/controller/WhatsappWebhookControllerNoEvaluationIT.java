@@ -8,9 +8,11 @@ import nl.codefield.ai_scheduler.dto.WebhookChange;
 import nl.codefield.ai_scheduler.dto.WebhookChangeValue;
 import nl.codefield.ai_scheduler.dto.WebhookEntry;
 import nl.codefield.ai_scheduler.dto.WebhookPayload;
+import nl.codefield.ai_scheduler.model.Customer;
 import nl.codefield.ai_scheduler.repository.CustomerRepository;
 import nl.codefield.ai_scheduler.service.BookingService;
 import nl.codefield.ai_scheduler.service.CalendarService;
+import nl.codefield.ai_scheduler.service.CustomerService;
 import nl.codefield.ai_scheduler.service.WhatsappService;
 import org.junit.Ignore;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,7 +36,6 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @AutoConfigureMockMvc
@@ -64,6 +65,9 @@ class WhatsappWebhookControllerNoEvaluationIT {
     @MockitoSpyBean
     private BookingService bookingService;
 
+    @MockitoSpyBean
+    private CustomerService customerService;
+
     @BeforeEach
     void cleanState() {
         Mockito.reset(whatsappService, calendarService, bookingService);
@@ -74,7 +78,7 @@ class WhatsappWebhookControllerNoEvaluationIT {
     void handleIncomingMessage() throws Exception {
         String initializationPrompt = "Hello! I need a haircut.";
         sendAndReceive(initializationPrompt);
-        verify(bookingService).findCustomerByPhoneNumber("31612345678");
+        verify(customerService, atLeastOnce()).findByPhoneNumber("31612345678");
 
         // Step 2, register the new customer
         // Reset service mocks to capture the state change cleanly for the second turn
@@ -92,11 +96,46 @@ class WhatsappWebhookControllerNoEvaluationIT {
         String dateAndTimePrompt = "Can we put it for tomorrow 3 PM?";
         sendAndReceive(dateAndTimePrompt);
 
-        verify(calendarService).getEvents(any(LocalDateTime.class), any(LocalDateTime.class));
+        verify(calendarService).getEvents(any(String.class), any(LocalDateTime.class));
 
+        LocalDateTime expectedStartDateTime = LocalDateTime.parse("2026-08-05T15:00:00");
+        LocalDateTime expectedEndDateTime = expectedStartDateTime.plusMinutes(30);
+        verify(calendarService, timeout(2000)).addEvent(
+                eq("Haircut: John Doe"),
+                any(String.class),
+                eq(expectedStartDateTime),
+                eq(expectedEndDateTime)
+        );
     }
 
-    private String sendAndReceive(String userPrompt) throws Exception {
+    @Test
+    void handleIncomingMessage_knownCustomer() throws Exception {
+        Customer customer = Customer.builder().name("John Doe").gender("Male")
+                .phoneNumber("31612345678").email("john.doe@example.com").build();
+        customerRepository.save(customer);
+
+        String initializationPrompt = "Hello! I need a haircut.";
+        sendAndReceive(initializationPrompt);
+        verify(customerService, atLeastOnce()).findByPhoneNumber("31612345678");
+
+        // Step 3, date and time for the appointment
+        reset(whatsappService);
+        String dateAndTimePrompt = "Can we put it for tomorrow 3 PM?";
+        sendAndReceive(dateAndTimePrompt);
+
+        verify(calendarService).getEvents(any(String.class), any(LocalDateTime.class));
+
+        LocalDateTime expectedStartDateTime = LocalDateTime.parse("2026-08-05T15:00:00");
+        LocalDateTime expectedEndDateTime = expectedStartDateTime.plusMinutes(30);
+        verify(calendarService, timeout(2000)).addEvent(
+                eq("Haircut: John Doe"),
+                any(String.class),
+                eq(expectedStartDateTime),
+                eq(expectedEndDateTime)
+        );
+    }
+
+    private void sendAndReceive(String userPrompt) throws Exception {
         String phoneNumber = "31612345678";
 
         IncomingMessageText incomingMessage = new IncomingMessageText();
@@ -129,6 +168,6 @@ class WhatsappWebhookControllerNoEvaluationIT {
         verify(whatsappService, timeout(600000).times(1))
                 .sendTextMessage(eq(phoneNumber), messageCaptor.capture());
 
-        return messageCaptor.getValue();
+        messageCaptor.getValue();
     }
 }

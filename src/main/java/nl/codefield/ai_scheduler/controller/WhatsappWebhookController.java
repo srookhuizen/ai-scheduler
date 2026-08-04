@@ -6,10 +6,8 @@ import nl.codefield.ai_scheduler.dto.IncomingMessage;
 import nl.codefield.ai_scheduler.dto.WebhookChange;
 import nl.codefield.ai_scheduler.dto.WebhookEntry;
 import nl.codefield.ai_scheduler.dto.WebhookPayload;
-import nl.codefield.ai_scheduler.service.BookingService;
-import nl.codefield.ai_scheduler.service.CalendarService;
-import nl.codefield.ai_scheduler.service.SpeechService;
-import nl.codefield.ai_scheduler.service.WhatsappService;
+import nl.codefield.ai_scheduler.model.Customer;
+import nl.codefield.ai_scheduler.service.*;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
@@ -28,6 +26,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @RestController
@@ -41,9 +40,12 @@ public class WhatsappWebhookController {
     private final BookingService bookingService;
     private final MessageChatMemoryAdvisor memoryAdvisor;
     private final SpeechService speechService;
+    private final CustomerService customerService;
 
-    @Value("classpath:/prompts/scheduler-system-prompt.st")
-    private Resource systemPromptResource;
+    @Value("classpath:/prompts/scheduler-booking.st")
+    private Resource bookingPromptResource;
+    @Value("classpath:/prompts/scheduler-registration.st")
+    private Resource registrationPromptResource;
 
     @Value("${whatsapp.api.verify-token}")
     private String configuredVerifyToken;
@@ -90,23 +92,13 @@ public class WhatsappWebhookController {
     }
 
     private void sendResponse(String memoryId, String message, String phoneNumber) {
-        String dynamicTimestamp = ZonedDateTime.now(ZoneId.of("Europe/Amsterdam"))
-                .format(DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy 'at' hh:mm a z"));
-
         speechService.speak(message);
-        log.info("Compiling system-prompt template dynamically with clock value: {}", dynamicTimestamp);
-
-        SystemPromptTemplate template = new SystemPromptTemplate(systemPromptResource);
-        String compiledSystemPrompt = template.createMessage(Map.of(
-                "currentDate", dynamicTimestamp,
-                "phoneNumber", phoneNumber
-        )).getText();
 
         ToolCallbackProvider calendarTools = MethodToolCallbackProvider.builder().toolObjects(calendarService).build();
         ToolCallbackProvider bookingTools = MethodToolCallbackProvider.builder().toolObjects(bookingService).build();
 
         String responseMessage = chatClient.prompt()
-                .system(compiledSystemPrompt)
+                .system(getCompiledSystemPrompt(phoneNumber))
                 .advisors(advisorSpec -> advisorSpec
                         .advisors(memoryAdvisor)
                         .param(ChatMemory.CONVERSATION_ID, memoryId))
@@ -116,5 +108,32 @@ public class WhatsappWebhookController {
                 .call().chatResponse().getResult().getOutput().getText();
 
         apiService.sendTextMessage(phoneNumber, responseMessage);
+    }
+
+    private String getCompiledSystemPrompt(String phoneNumber) {
+        String dynamicTimestamp = ZonedDateTime.now(ZoneId.of("Europe/Amsterdam"))
+                .format(DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy 'at' hh:mm a z"));
+
+        Optional<Customer> optionalCustomer = customerService.findByPhoneNumber(phoneNumber);
+
+        if (optionalCustomer.isPresent()) {
+            Customer customer = optionalCustomer.get();
+            log.info("Customer found: {}. Loading booking template.", customer);
+
+            SystemPromptTemplate template = new SystemPromptTemplate(bookingPromptResource);
+            return template.createMessage(Map.of(
+                    "currentDate", dynamicTimestamp,
+                    "customerName", customer.getName(),
+                    "phoneNumber", phoneNumber
+            )).getText();
+        } else {
+            log.info("New customer detected. Loading registration template.");
+
+            SystemPromptTemplate template = new SystemPromptTemplate(registrationPromptResource);
+            return template.createMessage(Map.of(
+                    "currentDate", dynamicTimestamp,
+                    "phoneNumber", phoneNumber
+            )).getText();
+        }
     }
 }

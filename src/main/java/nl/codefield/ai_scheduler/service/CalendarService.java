@@ -39,6 +39,9 @@ public class CalendarService {
     private static final String APPLICATION_NAME = "Scheduler API";
     private static final List<String> SCOPES = Collections.singletonList(CalendarScopes.CALENDAR);
 
+    // Injecteer de ServiceService om de duur dynamisch in Java te kunnen berekenen
+    private final ServiceService serviceService;
+
     @Value("${google.calendar.api.credentials}")
     private String googleCredentialsJson;
     @Value("${google.calendar.api.calendar.id}")
@@ -53,12 +56,15 @@ public class CalendarService {
         return new EventDateTime().setDateTime(getDateTime(localDateTime)).setTimeZone("Europe/Amsterdam");
     }
 
-    @Tool(name = "getEvents", description = "Get a list of existing events from Google calendar for a specific timeframe to check availability.")
+    @Tool(name = "getEvents", description = "Check availability in Google Calendar. Provide the requested service and the desired start time.")
     public List<Event> getEvents(
-            @ToolParam(description = "The lower date window limit.") LocalDateTime start,
-            @ToolParam(description = "The upper data window limit.") LocalDateTime end) throws IOException {
+            @ToolParam(description = "The specific name of the service requested by the user.") String service,
+            @ToolParam(description = "The exact start date and time string in ISO-8601 format (YYYY-MM-DDTHH:mm:ss).") LocalDateTime start) throws IOException {
 
-        log.info("Getting events from Google calendar for start text {} end text {}", start, end);
+        Integer duration = serviceService.findByName(service).getDuration();
+        LocalDateTime end = start.plusMinutes(duration);
+
+        log.info("Getting events from Google calendar for service [{}] from start {} to calculated end {}", service, start, end);
 
         List<Event> events = getCalendar().events().list(calendarId).setMaxResults(100)
                 .setTimeMin(getDateTime(start))
@@ -76,21 +82,12 @@ public class CalendarService {
         getCalendar().events().delete(calendarId, eventId).execute();
     }
 
-    @Tool(name = "addEvent", description = "Add and book a brand new appointment event to Google calendar after confirming no conflicts exist.")
-    public void addEvent(
-            @ToolParam(description = "The main title of the appointment.") String summary,
-            @ToolParam(description = "The brief context detailing the booking.") String description,
-            @ToolParam(description = "The exact start moment text structure.") LocalDateTime start,
-            @ToolParam(description = "The exact end moment text structure.") LocalDateTime end) throws IOException {
-
-        log.info("Adding event via AI parameters: summary [{}], start [{}], end [{}]", summary, start, end);
+    public void addEvent(String summary, String description, LocalDateTime start, LocalDateTime end) throws IOException {
+        log.info("Adding event via Java calculated parameters: summary [{}], start [{}], calculated end [{}]", summary, start, end);
         Event event = new Event().setSummary(summary).setDescription(description);
 
         event.setStart(getEventDateTime(start));
         event.setEnd(getEventDateTime(end));
-
-        //EventAttendee attendee = new EventAttendee().setEmail(email).setDisplayName(customer.getName());
-        //event.setAttendees(Collections.singletonList(attendee));
 
         EventReminder[] reminderOverrides = new EventReminder[]{
                 new EventReminder().setMethod("email").setMinutes(60 * 24 * 7)
