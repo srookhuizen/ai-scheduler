@@ -17,12 +17,16 @@ import org.springframework.web.client.RestClient;
 public class WhatsappService {
 
     private final RestClient restClient;
+    private final SpeechService speechService;
+
     @Value("${whatsapp.api.base-url}")
     private String baseUrl;
     @Value("${whatsapp.api.access-token}")
     private String accessToken;
 
     public void sendTextMessage(String recipientMobile, String messageBody) {
+        speechService.speak(messageBody);
+
         try {
             SendMessageRequestText textObject = new SendMessageRequestText();
             textObject.setBody(messageBody);

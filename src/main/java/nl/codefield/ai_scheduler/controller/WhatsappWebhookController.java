@@ -8,6 +8,7 @@ import nl.codefield.ai_scheduler.dto.WebhookEntry;
 import nl.codefield.ai_scheduler.dto.WebhookPayload;
 import nl.codefield.ai_scheduler.service.BookingService;
 import nl.codefield.ai_scheduler.service.CalendarService;
+import nl.codefield.ai_scheduler.service.SpeechService;
 import nl.codefield.ai_scheduler.service.WhatsappService;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
@@ -39,6 +40,7 @@ public class WhatsappWebhookController {
     private final CalendarService calendarService;
     private final BookingService bookingService;
     private final MessageChatMemoryAdvisor memoryAdvisor;
+    private final SpeechService speechService;
 
     @Value("classpath:/prompts/scheduler-system-prompt.st")
     private Resource systemPromptResource;
@@ -91,6 +93,7 @@ public class WhatsappWebhookController {
         String dynamicTimestamp = ZonedDateTime.now(ZoneId.of("Europe/Amsterdam"))
                 .format(DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy 'at' hh:mm a z"));
 
+        speechService.speak(message);
         log.info("Compiling system-prompt template dynamically with clock value: {}", dynamicTimestamp);
 
         SystemPromptTemplate template = new SystemPromptTemplate(systemPromptResource);

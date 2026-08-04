@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   ollama:
     image: ollama/ollama:latest
@@ -8,17 +10,30 @@ services:
       - ollama-storage:/root/.ollama
     environment:
       - TZ=Europe/Amsterdam
+    restart: unless-stopped
     entrypoint: [ "/bin/sh", "-c" ]
-    command: >
-      "ollama serve &
-       until ollama list >/dev/null 2>&1; do sleep 1; done &&
-       ollama pull gemma4:e2b &&
-       ollama pull bespoke-minicheck &&
-       echo '==> Pre-warming model weights in memory...' &&
-       ollama run gemma4:e2b '' &&
-       ollama run bespoke-minicheck '' &&
-       echo '==> AI engine initialization complete!' &&
-       wait"
+    command:
+      - |
+        ollama serve &
+        until ollama list >/dev/null 2>&1; do sleep 1; done
+        ollama pull gqwen2.5:3b
+        ollama pull bespoke-minicheck
+        echo '==> Pre-warming model weights in memory...'
+        ollama run qwen2.5:3b ""
+        ollama run bespoke-minicheck ""
+        echo '==> AI engine initialization complete!'
+        wait
+    networks:
+      - whatsapp-ai-network
+
+  tts-engine:
+    image: ghcr.io/remsky/kokoro-fastapi-cpu:latest
+    container_name: tts-engine
+    ports:
+      - "8880:8880"
+    environment:
+      - TZ=Europe/Amsterdam
+    restart: unless-stopped
     networks:
       - whatsapp-ai-network
 
@@ -34,6 +49,7 @@ services:
       - TZ=Europe/Amsterdam
     volumes:
       - postgres-storage:/var/lib/postgresql/data
+    restart: unless-stopped
     networks:
       - whatsapp-ai-network
 
@@ -49,10 +65,18 @@ services:
       - TZ=Europe/Amsterdam
       - BOT_WEBHOOK_URL=http://hostpc:8081/webhook
     extra_hosts:
-      # This dynamically routes 'hostpc' to your computer's loopback, regardless of your IP
       - "hostpc:host-gateway"
+    volumes:
+      - wce-storage:/app
     entrypoint: [ "/bin/sh", "-c" ]
-    command: [ "npx --yes degit DonnC/wce-emulator#main . && npm install && (npm run postinstall || true) && npm run dev" ]
+    command:
+      - |
+        if [ ! -d "/app/node_modules" ]; then
+          npx --yes degit DonnC/wce-emulator#main . --force
+          npm install
+          npm run postinstall || true
+        fi
+        npm run dev
     restart: unless-stopped
     networks:
       - whatsapp-ai-network
@@ -60,6 +84,7 @@ services:
 volumes:
   ollama-storage:
   postgres-storage:
+  wce-storage:
 
 networks:
   whatsapp-ai-network:
