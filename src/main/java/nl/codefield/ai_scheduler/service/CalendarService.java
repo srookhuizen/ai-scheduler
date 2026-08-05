@@ -11,6 +11,7 @@ import com.google.api.services.calendar.CalendarScopes;
 import com.google.api.services.calendar.model.Event;
 import com.google.api.services.calendar.model.EventDateTime;
 import com.google.api.services.calendar.model.EventReminder;
+import com.google.api.services.calendar.model.Events;
 import com.google.auth.http.HttpCredentialsAdapter;
 import com.google.auth.oauth2.GoogleCredentials;
 import lombok.RequiredArgsConstructor;
@@ -39,7 +40,6 @@ public class CalendarService {
     private static final String APPLICATION_NAME = "Scheduler API";
     private static final List<String> SCOPES = Collections.singletonList(CalendarScopes.CALENDAR);
 
-    // Injecteer de ServiceService om de duur dynamisch in Java te kunnen berekenen
     private final ServiceService serviceService;
 
     @Value("${google.calendar.api.credentials}")
@@ -73,6 +73,19 @@ public class CalendarService {
 
         log.info("Found events [{}], from [{}], till [{}]", events.size(), start, end);
         return events;
+    }
+
+    public void deleteAllEvents() throws IOException {
+        log.info("Deleting all events from Google calendar");
+        LocalDateTime start = LocalDateTime.now().minusDays(2);
+        LocalDateTime end = LocalDateTime.now().plusDays(2);
+        Events events = getCalendar().events().list(calendarId).setTimeMin(getDateTime(start)).setTimeMax(getDateTime(end))
+                .setOrderBy("startTime").setSingleEvents(true).execute();
+        log.info("Found events [{}], from [{}] till [{}]", events.size(), start, end);
+        for (Event event : events.getItems()) {
+            log.info("Deleting event [{}]", event.getSummary());
+            getCalendar().events().delete(calendarId, event.getId());
+        }
     }
 
     @Tool(name = "deleteEvent", description = "Delete a specific event from Google calendar using its unique alphanumeric event identifier string.")
