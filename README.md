@@ -46,6 +46,7 @@ Emulator should be available at http://localhost:8080/
 ### Ollama docker
 See [Ollama](https://ollama.com/) for more info.
 
+### Docker commands for local
 ```bash
 docker compose down
 ```
@@ -60,5 +61,10 @@ docker compose up -d
 
 ```bash
 docker logs -f ollama-model-puller
+```
+
+### Build and push the docker image
+```bash
+./scripts/dockerBuildAndPush.sh
 ```
 

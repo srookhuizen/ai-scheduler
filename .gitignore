@@ -4,4 +4,5 @@ target/
 credentials.json
 mvnw.cmd
 mvnw
-runApp.sh
+scripts/dockerRun.sh
+scripts/render.env.txt
