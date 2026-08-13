@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.audio.tts.TextToSpeechModel;
 import org.springframework.ai.audio.tts.TextToSpeechPrompt;
 import org.springframework.ai.audio.tts.TextToSpeechResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedInputStream;
@@ -18,7 +19,13 @@ public class SpeechService {
 
     private final TextToSpeechModel speechModel;
 
+    @Value("${ai.scheduler.speech.enabled:false}")
+    private boolean speechEnabled;
+
     public void speak(String text) {
+        if (!speechEnabled) {
+            return;
+        }
 
         TextToSpeechPrompt prompt = new TextToSpeechPrompt(text);
 

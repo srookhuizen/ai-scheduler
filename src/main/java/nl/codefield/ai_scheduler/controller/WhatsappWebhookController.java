@@ -35,17 +35,7 @@ import java.util.Optional;
 public class WhatsappWebhookController {
 
     private final WhatsappService apiService;
-    private final ChatClient chatClient;
-    private final CalendarService calendarService;
-    private final BookingService bookingService;
-    private final MessageChatMemoryAdvisor memoryAdvisor;
-    private final SpeechService speechService;
-    private final CustomerService customerService;
-
-    @Value("classpath:/prompts/scheduler-booking.st")
-    private Resource bookingPromptResource;
-    @Value("classpath:/prompts/scheduler-registration.st")
-    private Resource registrationPromptResource;
+    private final ChatService chatService;
 
     @Value("${whatsapp.api.verify-token}")
     private String configuredVerifyToken;
@@ -80,7 +70,7 @@ public class WhatsappWebhookController {
 
                                 if (StringUtils.hasText(messageText)) {
                                     log.info("Incoming message from {}: {}", senderNumber, messageText);
-                                    sendResponse(senderNumber, messageText, senderNumber);
+                                    sendResponse(messageText, senderNumber);
                                 }
                             }
                         }
@@ -91,49 +81,11 @@ public class WhatsappWebhookController {
         return ResponseEntity.ok().build();
     }
 
-    private void sendResponse(String memoryId, String message, String phoneNumber) {
-        speechService.speak(message);
+    private void sendResponse(String message, String phoneNumber) {
 
-        ToolCallbackProvider calendarTools = MethodToolCallbackProvider.builder().toolObjects(calendarService).build();
-        ToolCallbackProvider bookingTools = MethodToolCallbackProvider.builder().toolObjects(bookingService).build();
-
-        String responseMessage = chatClient.prompt()
-                .system(getCompiledSystemPrompt(phoneNumber))
-                .advisors(advisorSpec -> advisorSpec
-                        .advisors(memoryAdvisor)
-                        .param(ChatMemory.CONVERSATION_ID, memoryId))
-                .user(message)
-                .tools(calendarTools.getToolCallbacks())
-                .tools(bookingTools.getToolCallbacks())
+        String responseMessage = chatService.chat(message, phoneNumber)
                 .call().chatResponse().getResult().getOutput().getText();
 
         apiService.sendTextMessage(phoneNumber, responseMessage);
-    }
-
-    private String getCompiledSystemPrompt(String phoneNumber) {
-        String dynamicTimestamp = ZonedDateTime.now(ZoneId.of("Europe/Amsterdam"))
-                .format(DateTimeFormatter.ofPattern("EEEE, MMMM d, yyyy 'at' hh:mm a z"));
-
-        Optional<Customer> optionalCustomer = customerService.findByPhoneNumber(phoneNumber);
-
-        if (optionalCustomer.isPresent()) {
-            Customer customer = optionalCustomer.get();
-            log.info("Customer found: {}. Loading booking template.", customer);
-
-            SystemPromptTemplate template = new SystemPromptTemplate(bookingPromptResource);
-            return template.createMessage(Map.of(
-                    "currentDate", dynamicTimestamp,
-                    "customerName", customer.getName(),
-                    "phoneNumber", phoneNumber
-            )).getText();
-        } else {
-            log.info("New customer detected. Loading registration template.");
-
-            SystemPromptTemplate template = new SystemPromptTemplate(registrationPromptResource);
-            return template.createMessage(Map.of(
-                    "currentDate", dynamicTimestamp,
-                    "phoneNumber", phoneNumber
-            )).getText();
-        }
     }
 }

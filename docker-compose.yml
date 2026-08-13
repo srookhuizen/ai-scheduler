@@ -87,3 +87,4 @@ volumes:
 networks:
   whatsapp-ai-network:
     driver: bridge
+    name: whatsapp-ai-network

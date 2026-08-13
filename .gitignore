@@ -4,3 +4,4 @@ target/
 credentials.json
 mvnw.cmd
 mvnw
+runApp.sh

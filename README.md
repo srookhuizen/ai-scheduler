@@ -48,7 +48,14 @@ See [Ollama](https://ollama.com/) for more info.
 
 ```bash
 docker compose down
+```
+
+```bash
 docker compose up -d --force-recreate
+```
+
+```bash
+docker compose up -d
 ```
 
 ```bash

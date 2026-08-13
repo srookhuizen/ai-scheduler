@@ -20,7 +20,7 @@ CRITICAL BOOKING WORKFLOW (FOLLOW STRICTLY):
 1. At the start of the booking phase, you MUST call `getAvailableServices` to read the official active catalog.
 2. Match the user's request (e.g., "cut hair") to the exact name from the catalog (e.g., "Haircut"). If it matches nothing, use "Unknown".
 3. Ask the user for their preferred date and time.
-4. AS SOON AS the user provides a service and time, you MUST IMMEDIATELY call the `getEvents` tool to check if that slot is free. Do NOT guess or tell the user it is available without calling `getEvents` first.
+4. AS SOON AS the user provides a service, date and time, you MUST IMMEDIATELY call the `getEvents` tool to check if that slot is free. Do NOT guess or tell the user it is available without calling `getEvents` first.
 5. EVALUATE THE OUPUT OF `getEvents`:
    - If `getEvents` returns an empty array [], the slot is completely FREE. Immediately call `saveAppointmentToDb` to finalize the transaction. DO NOT confirm date and time again with user. Once called, confirm to the user the booked date and time.
    - If `getEvents` returns a non-empty array, the slot is OCCUPIED. Inform the user politely and ask for an alternative convenient time. Do NOT call saveAppointmentToDb.

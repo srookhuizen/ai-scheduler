@@ -13,7 +13,7 @@
 
   <groupId>nl.codefield</groupId>
   <artifactId>ai-scheduler</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>1.0.0</version>
   <name>ai-scheduler</name>
   <description>AI Scheduler with WhatsApp integration</description>
 
@@ -163,6 +163,7 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
         <configuration>
+          <mainClass>nl.codefield.ai_scheduler.AiSchedulerApplication</mainClass>
           <excludes>
             <exclude>
               <groupId>org.projectlombok</groupId>
@@ -170,6 +171,11 @@
             </exclude>
           </excludes>
         </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.graalvm.buildtools</groupId>
+        <artifactId>native-maven-plugin</artifactId>
       </plugin>
 
       <!-- Compiler Plugin with Lombok integration -->
@@ -238,6 +244,8 @@
                 <documentationProvider>none</documentationProvider>
                 <useBeanValidation>true</useBeanValidation>
                 <performBeanValidation>true</performBeanValidation>
+                <!-- This prevents 'src.main.java' from entering the package name -->
+                <sourceFolder>/</sourceFolder>
               </configOptions>
             </configuration>
           </execution>

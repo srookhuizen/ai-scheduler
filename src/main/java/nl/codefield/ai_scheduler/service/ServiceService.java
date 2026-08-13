@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import nl.codefield.ai_scheduler.model.Service;
 import nl.codefield.ai_scheduler.repository.ServiceRepository;
+import org.springframework.ai.chat.model.ToolContext;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.util.StringUtils;
 
@@ -27,8 +28,8 @@ public class ServiceService {
     }
 
     @Tool(name = "getAvailableServices", description = "Get the complete catalog of offered barber services, including their exact names, descriptions, prices, and durations.")
-    public List<Service> getAvailableServices() {
-        log.info("LLM tool execution: getAvailableServices called by AI");
+    public List<Service> getAvailableServices(String service) {
+        log.info("LLM tool execution: getAvailableServices called by AI: {}", service);
         return services();
     }
 
