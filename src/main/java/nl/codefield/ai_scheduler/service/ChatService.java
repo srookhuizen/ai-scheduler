@@ -7,7 +7,7 @@ import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.prompt.SystemPromptTemplate;
-import org.springframework.ai.tool.ToolCallbackProvider;
+import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.tool.method.MethodToolCallbackProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
@@ -18,6 +18,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 @Slf4j
 @Service
@@ -37,12 +38,12 @@ public class ChatService {
     @Value("classpath:/prompts/scheduler-registration.st")
     private Resource registrationPromptResource;
 
+    private static ToolCallback[] buildToolCallback(Object service) {
+        return MethodToolCallbackProvider.builder().toolObjects(service).build().getToolCallbacks();
+    }
+
     public ChatClient.ChatClientRequestSpec chat(String message, String phoneNumber) {
         speechService.speak(message);
-
-        ToolCallbackProvider calendarTools = MethodToolCallbackProvider.builder().toolObjects(calendarService).build();
-        ToolCallbackProvider bookingTools = MethodToolCallbackProvider.builder().toolObjects(bookingService).build();
-        ToolCallbackProvider serviceTools = MethodToolCallbackProvider.builder().toolObjects(serviceService).build();
 
         return chatClient.prompt()
                 .system(getCompiledSystemPrompt(phoneNumber))
@@ -50,9 +51,15 @@ public class ChatService {
                         .advisors(memoryAdvisor)
                         .param(ChatMemory.CONVERSATION_ID, phoneNumber))
                 .user(message)
-                .tools(serviceTools.getToolCallbacks())
-                .tools(calendarTools.getToolCallbacks())
-                .tools(bookingTools.getToolCallbacks());
+                .tools(getAToolCallbacks());
+    }
+
+    private ToolCallback[] getAToolCallbacks() {
+        return Stream.of(
+                buildToolCallback(calendarService),
+                buildToolCallback(bookingService),
+                buildToolCallback(serviceService)
+        ).flatMap(Stream::of).toArray(ToolCallback[]::new);
     }
 
     private String getCompiledSystemPrompt(String phoneNumber) {

@@ -16,10 +16,10 @@ import java.util.UUID;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Message {
     @Builder.Default
+    private final LocalDateTime createdAt = LocalDateTime.now();
+    @Builder.Default
     private String id = UUID.randomUUID().toString();
     private String text;
     private String phoneNumber;
     private String senderId;
-    @Builder.Default
-    private final LocalDateTime createdAt = LocalDateTime.now();
 }

@@ -6,27 +6,15 @@ import nl.codefield.ai_scheduler.dto.IncomingMessage;
 import nl.codefield.ai_scheduler.dto.WebhookChange;
 import nl.codefield.ai_scheduler.dto.WebhookEntry;
 import nl.codefield.ai_scheduler.dto.WebhookPayload;
-import nl.codefield.ai_scheduler.model.Customer;
-import nl.codefield.ai_scheduler.service.*;
-import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
-import org.springframework.ai.chat.memory.ChatMemory;
-import org.springframework.ai.chat.prompt.SystemPromptTemplate;
-import org.springframework.ai.tool.ToolCallbackProvider;
-import org.springframework.ai.tool.method.MethodToolCallbackProvider;
+import nl.codefield.ai_scheduler.service.ChatService;
+import nl.codefield.ai_scheduler.service.WhatsappService;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 @RequiredArgsConstructor
 @RestController
