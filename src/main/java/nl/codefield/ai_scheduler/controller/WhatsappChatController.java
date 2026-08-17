@@ -20,7 +20,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/webhook")
 @Slf4j
-public class WhatsappWebhookController {
+public class WhatsappChatController {
 
     private final WhatsappService apiService;
     private final ChatService chatService;

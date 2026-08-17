@@ -46,7 +46,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         TestConfig.class
 })
 @Ignore
-class WhatsappWebhookControllerNoEvaluationIT {
+class WhatsappChatControllerNoEvaluationIT {
 
     public static final String PHONE_NUMBER = "31612345678";
 

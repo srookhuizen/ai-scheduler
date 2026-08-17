@@ -56,7 +56,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         TestConfig.class
 })
 @Ignore
-class WhatsappWebhookControllerIT {
+class WhatsappChatControllerIT {
 
     @Autowired
     private MockMvc mockMvc;

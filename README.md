@@ -29,7 +29,7 @@ Calendar API and the Gemini AI engine:
 
 ### Whatsapp emulator (only needed if running outside docker)
 git clone https://github.com/DonnC/wce-emulator
-export BOT_WEBHOOK_URL="http://localhost:8081/webhook"
+export BOT_WEBHOOK_URL="http://localhost:8082/webhook"
 
 If not run already, run:
 ```bash

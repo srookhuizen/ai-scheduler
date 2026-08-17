@@ -6,6 +6,7 @@ services:
       - "11434:11434"
     volumes:
       - ollama-storage:/root/.ollama
+      - ./Modelfile:/root/Modelfile
     environment:
       - TZ=Europe/Amsterdam
     restart: unless-stopped
@@ -16,8 +17,13 @@ services:
         until ollama list >/dev/null 2>&1; do sleep 1; done
         ollama pull qwen2.5:3b
         ollama pull bespoke-minicheck
+        
+        # <--- Build custom model automatically inside Docker
+        echo '==> Creating custom barber-scheduler-qwen model...'
+        ollama create barber-scheduler-qwen -f /root/Modelfile
+        
         echo '==> Pre-warming model weights in memory...'
-        ollama run qwen2.5:3b ""
+        ollama run barber-scheduler-qwen ""   # <--- Pre-warm your custom model instead
         ollama run bespoke-minicheck ""
         echo '==> AI engine initialization complete!'
         wait
@@ -61,7 +67,7 @@ services:
     environment:
       - PORT=3001
       - TZ=Europe/Amsterdam
-      - BOT_WEBHOOK_URL=http://hostpc:8081/webhook
+      - BOT_WEBHOOK_URL=http://hostpc:8082/webhook
     extra_hosts:
       - "hostpc:host-gateway"
     volumes:

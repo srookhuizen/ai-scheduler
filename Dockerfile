@@ -26,11 +26,11 @@ USER spring:spring
 COPY --from=builder /build/target/*.jar app.jar
 
 # Expose your application port
-EXPOSE 8082
+EXPOSE 80
 
 # Production cloud environmental configurations
 # We use SerialGC and aggressive memory flags to force Java 26 to run on minimal RAM.
-ENV SERVER_PORT=8082 \
+ENV SERVER_PORT=80 \
     SPRING_APPLICATION_NAME=ai-scheduler \
     SPRING_PROFILES_ACTIVE=openai \
     AI_SCHEDULER_SPEECH_ENABLED=false \
