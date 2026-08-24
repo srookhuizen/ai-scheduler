@@ -15,7 +15,6 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.UUID;
 
-import static nl.codefield.ai_scheduler.chat_id.ChatIdArgumentResolver.HEADER_NAME;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -60,7 +59,6 @@ public class ChatControllerIT {
 
         mockMvc.perform(post("/chat")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header(HEADER_NAME, chatId)
                         .content(requestBodyJson))
                 .andExpect(status().isOk());
     }
@@ -71,7 +69,6 @@ public class ChatControllerIT {
 
         mockMvc.perform(post("/chat")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .header(HEADER_NAME, chatId)
                         .content(requestBodyJson))
                 .andExpect(status().isOk());
     }

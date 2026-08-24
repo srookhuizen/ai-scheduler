@@ -22,6 +22,7 @@ public class Customer {
     private String gender;
     private String phoneNumber;
     private String email;
+    private String imageUrl;
 
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @ToString.Exclude

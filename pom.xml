@@ -21,6 +21,7 @@
     <java.version>26</java.version>
     <spring-ai.version>2.0.0</spring-ai.version>
     <swagger-annotations.version>2.2.20</swagger-annotations.version>
+    <org.mapstruct.version>1.6.3</org.mapstruct.version>
   </properties>
 
   <dependencies>
@@ -82,7 +83,6 @@
       <artifactId>spring-boot-starter-actuator</artifactId>
     </dependency>
 
-
     <!-- OTHER -->
     <dependency>
       <groupId>org.postgresql</groupId>
@@ -110,6 +110,15 @@
       <artifactId>jlayer</artifactId>
       <version>1.0.1.4</version>
       <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.mapstruct</groupId>
+      <artifactId>mapstruct</artifactId>
+      <version>${org.mapstruct.version}</version>
     </dependency>
 
     <!-- Testing -->
@@ -141,6 +150,11 @@
     <dependency>
       <groupId>org.testcontainers</groupId>
       <artifactId>postgresql</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.security</groupId>
+      <artifactId>spring-security-test</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -198,22 +212,13 @@
             </goals>
             <configuration>
               <annotationProcessorPaths>
+                <!-- MapStruct Processor -->
                 <path>
-                  <groupId>org.projectlombok</groupId>
-                  <artifactId>lombok</artifactId>
-                  <version>${lombok.version}</version>
+                  <groupId>org.mapstruct</groupId>
+                  <artifactId>mapstruct-processor</artifactId>
+                  <version>${org.mapstruct.version}</version>
                 </path>
-              </annotationProcessorPaths>
-            </configuration>
-          </execution>
-          <execution>
-            <id>default-testCompile</id>
-            <phase>test-compile</phase>
-            <goals>
-              <goal>testCompile</goal>
-            </goals>
-            <configuration>
-              <annotationProcessorPaths>
+                <!-- Lombok Processor (Order matters! Lombok must be processed so MapStruct can see the getters/setters) -->
                 <path>
                   <groupId>org.projectlombok</groupId>
                   <artifactId>lombok</artifactId>
