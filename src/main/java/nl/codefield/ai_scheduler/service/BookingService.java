@@ -2,6 +2,7 @@ package nl.codefield.ai_scheduler.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import nl.codefield.ai_scheduler.dto.CustomerDTO;
 import nl.codefield.ai_scheduler.event.AppointmentSavedEvent;
 import nl.codefield.ai_scheduler.model.Appointment;
 import nl.codefield.ai_scheduler.model.Customer;
@@ -39,7 +40,7 @@ public class BookingService {
                 .orElseGet(() -> Customer.builder().name(name).gender(gender).phoneNumber(phoneNumber).email(email).build());
         log.info("LLM tool execution: registerNewCustomer for profile: {}", customer);
 
-        Customer savedCustomer = customerService.save(customer);
+        CustomerDTO savedCustomer = customerService.save(customer);
         log.info("Successfully registered customer: {}", savedCustomer);
         return "SUCCESS: Customer " + savedCustomer.getName() + " has been successfully registered in the database.";
     }

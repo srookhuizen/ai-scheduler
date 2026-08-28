@@ -22,17 +22,23 @@ public class CustomerService {
     }
 
     @Transactional
-    public Customer save(Customer customer) {
-        return customerRepository.save(customer);
+    public CustomerDTO save(Customer customer) {
+        return customerMapper.toDto(customerRepository.save(customer));
     }
 
     @Transactional
-    public Customer save(CustomerDTO dto) {
+    public CustomerDTO save(CustomerDTO dto) {
         Optional<Customer> optionalCustomer = customerRepository.findByEmail(dto.getEmail());
-        return optionalCustomer.orElseGet(() -> customerRepository.save(customerMapper.toEntity(dto)));
+        if(optionalCustomer.isPresent()) {
+            Customer customer = optionalCustomer.get();
+            customerMapper.map(dto, customer);
+            return customerMapper.toDto(customerRepository.save(customer));
+        } else {
+            Customer entity = customerMapper.toEntity(dto);
+            return customerMapper.toDto(customerRepository.save(entity));
+        }
     }
 
-    @Cacheable(value = "customers", key = "#email", unless = "#result == null || !#result.isPresent()")
     public Optional<CustomerDTO> findByEmail(String email) {
         return customerRepository.findByEmail(email).map(customerMapper::toDto);
     }

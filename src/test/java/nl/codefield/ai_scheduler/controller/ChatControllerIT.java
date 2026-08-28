@@ -15,6 +15,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.UUID;
 
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -38,10 +39,9 @@ public class ChatControllerIT {
     @Test
     @DisplayName("POST /chat should return 200 OK when valid payload is provided")
     void chat_ShouldReturnOk_WhenPayloadIsValid() throws Exception {
-        String chatId = UUID.randomUUID().toString();
 
-        sendChatMessage("Hello chatbot", chatId);
-        sendChatMessage("How are you?", chatId);
+        sendChatMessage("Hello chatbot");
+        sendChatMessage("How are you?");
     }
 
     @Test
@@ -53,11 +53,12 @@ public class ChatControllerIT {
         sendStreamMessage("How are you?", chatId);
     }
 
-    private void sendChatMessage(String text, String chatId) throws Exception {
+    private void sendChatMessage(String text) throws Exception {
         Message message = Message.builder().senderId(SENDER_ID).phoneNumber("24356").text(text).build();
         String requestBodyJson = objectMapper.writeValueAsString(message);
 
         mockMvc.perform(post("/chat")
+                        .with(jwt())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBodyJson))
                 .andExpect(status().isOk());
@@ -68,6 +69,7 @@ public class ChatControllerIT {
         String requestBodyJson = objectMapper.writeValueAsString(message);
 
         mockMvc.perform(post("/chat")
+                        .with(jwt())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBodyJson))
                 .andExpect(status().isOk());

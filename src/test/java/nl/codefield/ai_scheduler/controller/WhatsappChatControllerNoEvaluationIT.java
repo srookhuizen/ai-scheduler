@@ -2,12 +2,7 @@ package nl.codefield.ai_scheduler.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.codefield.ai_scheduler.config.TestConfig;
-import nl.codefield.ai_scheduler.dto.IncomingMessage;
-import nl.codefield.ai_scheduler.dto.IncomingMessageText;
-import nl.codefield.ai_scheduler.dto.WebhookChange;
-import nl.codefield.ai_scheduler.dto.WebhookChangeValue;
-import nl.codefield.ai_scheduler.dto.WebhookEntry;
-import nl.codefield.ai_scheduler.dto.WebhookPayload;
+import nl.codefield.ai_scheduler.dto.*;
 import nl.codefield.ai_scheduler.model.Customer;
 import nl.codefield.ai_scheduler.repository.CustomerRepository;
 import nl.codefield.ai_scheduler.service.BookingService;
@@ -19,7 +14,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -49,12 +43,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class WhatsappChatControllerNoEvaluationIT {
 
     public static final String PHONE_NUMBER = "31612345678";
-
+    private final ObjectMapper objectMapper = new ObjectMapper();
     @Autowired
     private MockMvc mockMvc;
-
-    private final ObjectMapper objectMapper = new ObjectMapper();
-
     @Autowired
     private CustomerRepository customerRepository;
 
@@ -142,7 +133,7 @@ class WhatsappChatControllerNoEvaluationIT {
 
         LocalDateTime start = LocalDateTime.parse("2026-08-05T15:00:00");
         LocalDateTime end = start.plusMinutes(30);
-       // calendarService.addEvent("Haircut: John Doe", "Haircut: John Doe", start, end);
+        // calendarService.addEvent("Haircut: John Doe", "Haircut: John Doe", start, end);
 
         sendAndReceive("Hi, i want to cut my hair.`");
         verify(customerService, atLeastOnce()).findByPhoneNumber(PHONE_NUMBER);

@@ -11,20 +11,16 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 @ToString
-public class Service {
+public class Company {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String name;
-    private String description;
-    private Double price;
-    private Integer duration;
+    private String kvkNumber;
+    private Integer workRadius;
 
-    public static Service createDefault() {
-        return Service.builder()
-                .name("Unknown")
-                .duration(60)
-                .build();
-    }
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "address_id", referencedColumnName = "id")
+    private Address address;
 }

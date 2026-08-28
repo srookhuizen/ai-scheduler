@@ -68,3 +68,6 @@ docker logs -f ollama-model-puller
 ./scripts/dockerBuildAndPush.sh
 ```
 
+### to change java version
+export JAVA_HOME="/opt/homebrew/opt/openjdk@25"
+export PATH="$JAVA_HOME/bin:$PATH"

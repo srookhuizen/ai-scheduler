@@ -2,12 +2,7 @@ package nl.codefield.ai_scheduler.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.codefield.ai_scheduler.config.TestConfig;
-import nl.codefield.ai_scheduler.dto.IncomingMessage;
-import nl.codefield.ai_scheduler.dto.IncomingMessageText;
-import nl.codefield.ai_scheduler.dto.WebhookChange;
-import nl.codefield.ai_scheduler.dto.WebhookChangeValue;
-import nl.codefield.ai_scheduler.dto.WebhookEntry;
-import nl.codefield.ai_scheduler.dto.WebhookPayload;
+import nl.codefield.ai_scheduler.dto.*;
 import nl.codefield.ai_scheduler.repository.CustomerRepository;
 import nl.codefield.ai_scheduler.service.BookingService;
 import nl.codefield.ai_scheduler.service.CalendarService;
@@ -19,14 +14,12 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.springframework.ai.chat.client.ChatClient;
-
-import org.springframework.ai.chat.evaluation.RelevancyEvaluator;
 import org.springframework.ai.chat.evaluation.FactCheckingEvaluator;
+import org.springframework.ai.chat.evaluation.RelevancyEvaluator;
 import org.springframework.ai.chat.prompt.PromptTemplate;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.evaluation.EvaluationRequest;
 import org.springframework.ai.evaluation.EvaluationResponse;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -58,11 +51,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Ignore
 class WhatsappChatControllerIT {
 
+    private final ObjectMapper objectMapper = new ObjectMapper();
     @Autowired
     private MockMvc mockMvc;
-
-    private final ObjectMapper objectMapper = new ObjectMapper();
-
     @Autowired
     private ChatClient chatClient;
 
@@ -111,14 +102,14 @@ class WhatsappChatControllerIT {
 
         // the template variables query, response and context are filled by spring
         PromptTemplate relaxedRelevancyPrompt = new PromptTemplate("""
-            Determine if the response is a valid next step to help the user request a haircut.
-            Answer only YES or NO.
-            
-            User Query: {query}
-            Assistant Response: {response}
-            Context: {context}
-            
-            Answer: """);
+                Determine if the response is a valid next step to help the user request a haircut.
+                Answer only YES or NO.
+                
+                User Query: {query}
+                Assistant Response: {response}
+                Context: {context}
+                
+                Answer: """);
 
         RelevancyEvaluator relevancyEvaluator = RelevancyEvaluator.builder()
                 .chatClientBuilder(evaluationChatClient.mutate())
@@ -126,8 +117,8 @@ class WhatsappChatControllerIT {
                 .build();
 
         String cleanContextText = """
-            The assistant must onboard unknown callers by requesting their full name, email address, and gender
-            before allowing them to schedule a haircut slot.""";
+                The assistant must onboard unknown callers by requesting their full name, email address, and gender
+                before allowing them to schedule a haircut slot.""";
         Document cleanRelevancyContext = new Document(cleanContextText);
 
         EvaluationRequest relevancyRequest = new EvaluationRequest(initializationPrompt, List.of(cleanRelevancyContext), aiGeneratedResponse);
@@ -139,12 +130,12 @@ class WhatsappChatControllerIT {
         FactCheckingEvaluator factCheckingEvaluator = FactCheckingEvaluator.builder(evaluationChatClient.mutate()).build();
 
         String businessFactContext = """
-            The system allows clients to look up and book automated calendar slots.
-            If a client's phone number is not found in the database, the system must collect their full name,
-            email address, and gender to register them as a new customer.
-            The user's phone number is already verified through WhatsApp metadata,
-            so additional phone input collection rules are flexible or optional.
-            """;
+                The system allows clients to look up and book automated calendar slots.
+                If a client's phone number is not found in the database, the system must collect their full name,
+                email address, and gender to register them as a new customer.
+                The user's phone number is already verified through WhatsApp metadata,
+                so additional phone input collection rules are flexible or optional.
+                """;
         Document factTruthDocument = new Document(businessFactContext);
 
         EvaluationRequest factRequest = new EvaluationRequest(initializationPrompt, List.of(factTruthDocument), aiGeneratedResponse);
@@ -165,10 +156,10 @@ class WhatsappChatControllerIT {
                 eq("john.doe@example.com"));
 
         String registrationContextTruth = """
-            The customer registration workflow is complete.
-            The assistant acknowledges that the user wants a haircut.
-            The assistant is now asking the user for their preferred appointment date and time.
-            """;
+                The customer registration workflow is complete.
+                The assistant acknowledges that the user wants a haircut.
+                The assistant is now asking the user for their preferred appointment date and time.
+                """;
 
         factTruthDocument = new Document(registrationContextTruth);
 

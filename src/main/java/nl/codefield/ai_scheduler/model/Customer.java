@@ -6,7 +6,7 @@ import lombok.*;
 import java.util.List;
 
 @Entity
-@Table(name = "customer")
+@Table
 @Getter
 @Setter
 @NoArgsConstructor
@@ -23,6 +23,10 @@ public class Customer {
     private String phoneNumber;
     private String email;
     private String imageUrl;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "address_id", referencedColumnName = "id")
+    private Address address;
 
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @ToString.Exclude

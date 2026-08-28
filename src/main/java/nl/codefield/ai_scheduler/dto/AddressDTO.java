@@ -1,14 +1,11 @@
 package nl.codefield.ai_scheduler.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.util.StringUtils;
-
-import java.util.Objects;
 
 import static org.springframework.util.StringUtils.*;
 
@@ -17,17 +14,15 @@ import static org.springframework.util.StringUtils.*;
 @AllArgsConstructor
 @Builder
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class CustomerDTO {
-    private String name;
-    private String gender;
-    private String phoneNumber;
-    private String email;
-    private String imageUrl;
-    private AddressDTO address;
+public class AddressDTO {
+    private String street;
+    private String number;
+    private String postalCode;
+    private String city;
+    private Double latitude;
+    private Double longitude;
 
-    @JsonProperty("onboarded")
-    public boolean onboarded() {
-        return Objects.nonNull(address) && address.isOnboarded();
+    public boolean isOnboarded() {
+        return hasText(street) && hasText(number) && hasText(postalCode) && hasText(city);
     }
 }
-
