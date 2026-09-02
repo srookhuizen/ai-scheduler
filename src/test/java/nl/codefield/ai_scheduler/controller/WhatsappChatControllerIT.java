@@ -10,6 +10,7 @@ import nl.codefield.ai_scheduler.service.WhatsappService;
 import org.junit.Ignore;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
@@ -48,7 +49,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         //DockerTestConfig.class
         TestConfig.class
 })
-@Ignore
+@Disabled
 class WhatsappChatControllerIT {
 
     private final ObjectMapper objectMapper = new ObjectMapper();

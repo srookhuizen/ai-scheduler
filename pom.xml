@@ -288,6 +288,51 @@
           </execution>
         </executions>
       </plugin>
+
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>properties-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>initialize</phase>
+            <goals>
+              <goal>read-project-properties</goal>
+            </goals>
+            <configuration>
+              <files>
+                <!-- It looks for the file locally; if missing (like in CI/CD), it won't crash -->
+                <file>${project.basedir}/env.local</file>
+              </files>
+              <quiet>true</quiet>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <configuration>
+          <systemPropertyVariables>
+            <!--
+              This maps the variables dynamically.
+              If .env.local has 'DB_PASSWORD=secret',
+              Maven maps it here automatically without revealing the value.
+            -->
+            <spring.ai.google.genai.api-key>${GEMINI_API_KEY}</spring.ai.google.genai.api-key>
+            <google.calendar.api.credentials>${GOOGLE_CALENDAR_CREDENTIALS}</google.calendar.api.credentials>
+            <google.calendar.api.calendar.id>${GOOGLE_CALENDAR_ID}</google.calendar.api.calendar.id>
+            <spring.ai.openai.api-key>${GROQ_API_KEY}</spring.ai.openai.api-key>
+          </systemPropertyVariables>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>integration-test</goal>
+              <goal>verify</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
     </plugins>
   </build>
 </project>

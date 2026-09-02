@@ -11,6 +11,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.http.MediaType;
+import org.springframework.transaction.annotation.Transactional;
 
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -22,16 +23,17 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+@Transactional
 @SpringBootTest
 @ActiveProfiles({"test", "ollama"})
 @AutoConfigureMockMvc
 @Sql(scripts = {
+        "/sql/cleanup.sql",
         "/sql/insert-addresses.sql",              // 1. Instantiates ALL addresses safely
         "/sql/insert-customer-dependencies.sql", // 2. Instantiates profiles
         "/sql/insert-customers.sql",             // 3. Instantiates customers
         "/sql/insert-companies.sql"              // 4. Instantiates companies
 }, executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
-@Sql(scripts = "/sql/cleanup.sql", executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 class CompanyControllerIT {
 
     @Autowired
