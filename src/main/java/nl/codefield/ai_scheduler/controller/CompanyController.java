@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import nl.codefield.ai_scheduler.dto.CompanyDTO;
 import nl.codefield.ai_scheduler.dto.CustomerDTO;
-import nl.codefield.ai_scheduler.model.BarberType;
+import nl.codefield.ai_scheduler.entity.BarberType;
 import nl.codefield.ai_scheduler.service.CompanyService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;

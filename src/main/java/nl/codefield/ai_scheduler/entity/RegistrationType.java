@@ -1,4 +1,4 @@
-package nl.codefield.ai_scheduler.model;
+package nl.codefield.ai_scheduler.entity;
 
 import lombok.Getter;
 

@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import nl.codefield.ai_scheduler.dto.CustomerDTO;
 import nl.codefield.ai_scheduler.exception.ResourceNotFoundException;
 import nl.codefield.ai_scheduler.mapper.CustomerMapper;
-import nl.codefield.ai_scheduler.model.Customer;
+import nl.codefield.ai_scheduler.entity.Customer;
 import nl.codefield.ai_scheduler.repository.CompanyRepository;
 import nl.codefield.ai_scheduler.repository.CustomerRepository;
 import org.springframework.stereotype.Service;

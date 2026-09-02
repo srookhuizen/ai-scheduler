@@ -1,6 +1,6 @@
 package nl.codefield.ai_scheduler.repository;
 
-import nl.codefield.ai_scheduler.model.Appointment;
+import nl.codefield.ai_scheduler.entity.Appointment;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

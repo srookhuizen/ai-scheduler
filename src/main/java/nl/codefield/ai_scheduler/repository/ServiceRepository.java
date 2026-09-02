@@ -1,6 +1,6 @@
 package nl.codefield.ai_scheduler.repository;
 
-import nl.codefield.ai_scheduler.model.Service;
+import nl.codefield.ai_scheduler.entity.Service;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

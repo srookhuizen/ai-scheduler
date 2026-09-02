@@ -2,7 +2,7 @@ package nl.codefield.ai_scheduler.event;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import nl.codefield.ai_scheduler.model.Appointment;
+import nl.codefield.ai_scheduler.entity.Appointment;
 import nl.codefield.ai_scheduler.service.CalendarService;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;

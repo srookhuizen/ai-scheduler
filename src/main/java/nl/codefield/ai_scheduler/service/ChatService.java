@@ -2,7 +2,7 @@ package nl.codefield.ai_scheduler.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import nl.codefield.ai_scheduler.model.Customer;
+import nl.codefield.ai_scheduler.entity.Customer;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;

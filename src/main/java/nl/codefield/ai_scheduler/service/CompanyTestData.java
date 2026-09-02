@@ -1,8 +1,8 @@
 package nl.codefield.ai_scheduler.service;
 
-import nl.codefield.ai_scheduler.model.Address;
-import nl.codefield.ai_scheduler.model.BarberType;
-import nl.codefield.ai_scheduler.model.Company;
+import nl.codefield.ai_scheduler.entity.Address;
+import nl.codefield.ai_scheduler.entity.BarberType;
+import nl.codefield.ai_scheduler.entity.Company;
 
 import java.util.List;
 import java.util.UUID;

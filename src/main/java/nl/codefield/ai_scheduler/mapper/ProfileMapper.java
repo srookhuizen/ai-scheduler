@@ -1,7 +1,7 @@
 package nl.codefield.ai_scheduler.mapper;
 
 import nl.codefield.ai_scheduler.dto.ProfileDTO;
-import nl.codefield.ai_scheduler.model.Profile;
+import nl.codefield.ai_scheduler.entity.Profile;
 import org.mapstruct.*;
 
 @Mapper(componentModel = "spring", builder = @Builder(disableBuilder = true),

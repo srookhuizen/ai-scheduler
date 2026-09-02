@@ -7,7 +7,7 @@ import nl.codefield.ai_scheduler.dto.CompanyDTO;
 import nl.codefield.ai_scheduler.dto.CustomerDTO;
 import nl.codefield.ai_scheduler.exception.ResourceNotFoundException;
 import nl.codefield.ai_scheduler.mapper.CompanyMapper;
-import nl.codefield.ai_scheduler.model.BarberType;
+import nl.codefield.ai_scheduler.entity.BarberType;
 import nl.codefield.ai_scheduler.repository.CompanyRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Value;

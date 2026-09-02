@@ -1,7 +1,7 @@
 package nl.codefield.ai_scheduler.mapper;
 
 import nl.codefield.ai_scheduler.dto.CustomerDTO;
-import nl.codefield.ai_scheduler.model.Customer;
+import nl.codefield.ai_scheduler.entity.Customer;
 import org.mapstruct.*;
 import org.mapstruct.factory.Mappers;
 

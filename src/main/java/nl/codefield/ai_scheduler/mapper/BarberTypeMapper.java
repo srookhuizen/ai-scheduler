@@ -1,7 +1,7 @@
 package nl.codefield.ai_scheduler.mapper;
 
 import nl.codefield.ai_scheduler.dto.BarberTypeDTO;
-import nl.codefield.ai_scheduler.model.BarberType;
+import nl.codefield.ai_scheduler.entity.BarberType;
 import org.mapstruct.Builder;
 import org.mapstruct.Mapper;
 
