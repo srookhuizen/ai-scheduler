@@ -6,11 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.util.StringUtils;
 
 import java.util.Objects;
-
-import static org.springframework.util.StringUtils.*;
 
 @Data
 @NoArgsConstructor
@@ -18,12 +15,16 @@ import static org.springframework.util.StringUtils.*;
 @Builder
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class CustomerDTO {
-    private String name;
+    private String id;
+    private String firstName;
+    private String lastName;
     private String gender;
     private String phoneNumber;
     private String email;
     private String imageUrl;
+    private String registrationType;
     private AddressDTO address;
+    private ProfileDTO profile;
 
     @JsonProperty("onboarded")
     public boolean onboarded() {

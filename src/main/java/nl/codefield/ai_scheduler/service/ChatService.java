@@ -75,7 +75,7 @@ public class ChatService {
             SystemPromptTemplate template = new SystemPromptTemplate(bookingPromptResource);
             return template.createMessage(Map.of(
                     "currentDate", dynamicTimestamp,
-                    "customerName", customer.getName(),
+                    "customerName", customer.getFirstName(),
                     "phoneNumber", phoneNumber
             )).getText();
         } else {

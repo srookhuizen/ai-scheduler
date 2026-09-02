@@ -17,7 +17,7 @@ public class AddressService {
     public Optional<AddressDTO> getAddress(String postalCode, String houseNumber) {
         try {
             return Optional.ofNullable(addressLookupService.findAndBuildAddress(postalCode, houseNumber))
-                    .map(addressMapper::toDTO);
+                    .map(addressMapper::map);
         } catch (AddressNotFoundException e) {
             return Optional.empty();
         }

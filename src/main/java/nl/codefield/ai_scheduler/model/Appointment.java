@@ -35,6 +35,6 @@ public class Appointment {
 
     public String getSummary() {
         return (service != null ? service.getName() : "Unknown Service") + ": " +
-                (customer != null ? customer.getName() : "Unknown Customer");
+                (customer != null ? customer.getFirstName() : "Unknown Customer");
     }
 }

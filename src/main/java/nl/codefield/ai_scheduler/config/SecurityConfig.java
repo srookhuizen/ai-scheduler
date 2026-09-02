@@ -18,6 +18,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // Expose the health check endpoint publicly
                         .requestMatchers("/actuator/health").permitAll()
+                        .requestMatchers("/customer/register").permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2

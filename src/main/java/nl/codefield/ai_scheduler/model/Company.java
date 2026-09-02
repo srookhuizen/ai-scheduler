@@ -3,6 +3,8 @@ package nl.codefield.ai_scheduler.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.UUID;
+
 @Entity
 @Table
 @Getter
@@ -16,6 +18,10 @@ public class Company {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false, unique = true, updatable = false, length = 36)
+    @Builder.Default
+    private String publicId = UUID.randomUUID().toString();
+
     private String name;
     private String kvkNumber;
     private Integer workRadius;
@@ -23,4 +29,6 @@ public class Company {
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "address_id", referencedColumnName = "id")
     private Address address;
+
+    private BarberType barberType;
 }

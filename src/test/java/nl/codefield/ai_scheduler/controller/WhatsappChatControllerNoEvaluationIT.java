@@ -102,7 +102,7 @@ class WhatsappChatControllerNoEvaluationIT {
 
     @Test
     void handleIncomingMessage_knownCustomer() throws Exception {
-        Customer customer = Customer.builder().name("John Doe").gender("Male")
+        Customer customer = Customer.builder().firstName("John Doe").gender("Male")
                 .phoneNumber(PHONE_NUMBER).email("john.doe@example.com").build();
         customerRepository.save(customer);
 
@@ -127,7 +127,7 @@ class WhatsappChatControllerNoEvaluationIT {
 
     @Test
     void handleIncomingMessage_knownCustomer_andExistingEvent() throws Exception {
-        Customer customer = Customer.builder().name("John Doe").gender("Male")
+        Customer customer = Customer.builder().firstName("John Doe").gender("Male")
                 .phoneNumber(PHONE_NUMBER).email("john.doe@example.com").build();
         customerRepository.save(customer);
 

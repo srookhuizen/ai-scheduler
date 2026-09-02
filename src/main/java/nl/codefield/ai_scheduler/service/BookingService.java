@@ -37,12 +37,12 @@ public class BookingService {
 
 
         Customer customer = customerService.findByPhoneNumber(phoneNumber)
-                .orElseGet(() -> Customer.builder().name(name).gender(gender).phoneNumber(phoneNumber).email(email).build());
+                .orElseGet(() -> Customer.builder().firstName(name).gender(gender).phoneNumber(phoneNumber).email(email).build());
         log.info("LLM tool execution: registerNewCustomer for profile: {}", customer);
 
         CustomerDTO savedCustomer = customerService.save(customer);
         log.info("Successfully registered customer: {}", savedCustomer);
-        return "SUCCESS: Customer " + savedCustomer.getName() + " has been successfully registered in the database.";
+        return "SUCCESS: Customer " + savedCustomer.getFirstName() + " has been successfully registered in the database.";
     }
 
 

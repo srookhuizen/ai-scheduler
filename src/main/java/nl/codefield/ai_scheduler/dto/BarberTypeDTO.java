@@ -11,11 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class CompanyDTO {
-    private String id;
+public class BarberTypeDTO {
+    private String value;
     private String name;
-    private String kvkNumber;
-    private Integer workRadius;
-    private AddressDTO address;
-    private BarberTypeDTO barberType;
 }

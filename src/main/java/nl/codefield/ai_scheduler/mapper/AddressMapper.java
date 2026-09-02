@@ -8,5 +8,5 @@ import org.mapstruct.Mapper;
 @Mapper(componentModel = "spring", builder = @Builder(disableBuilder = true))
 public interface AddressMapper {
 
-    AddressDTO toDTO(PdokSearchResponse.PdokAddressDoc address);
+    AddressDTO map(PdokSearchResponse.PdokAddressDoc address);
 }

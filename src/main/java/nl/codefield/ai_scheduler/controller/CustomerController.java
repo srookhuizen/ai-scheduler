@@ -3,14 +3,10 @@ package nl.codefield.ai_scheduler.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import nl.codefield.ai_scheduler.dto.CustomerDTO;
-import nl.codefield.ai_scheduler.model.Customer;
 import nl.codefield.ai_scheduler.service.CustomerService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
 
@@ -30,7 +26,13 @@ public class CustomerController {
         return optionalCustomer.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    @PostMapping("/save")
+    @GetMapping("/{id}")
+    public ResponseEntity<CustomerDTO> getCustomerByPublicId(@PathVariable String id) {
+        CustomerDTO customerDto = customerService.getCustomerByPublicId(id);
+        return ResponseEntity.ok(customerDto);
+    }
+
+    @PostMapping("/register")
     public ResponseEntity<CustomerDTO> save(@RequestBody CustomerDTO dto) {
         log.info("Saving customer {}", dto);
         CustomerDTO savedCustomer = customerService.save(dto);
